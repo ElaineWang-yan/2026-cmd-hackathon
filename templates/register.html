@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Register</title>
 </head>
 
 <body>
 
-<h2>Login</h2>
+<h2>Register</h2>
 
-<form id="loginForm">
+<form id="registerForm">
 
     <label>Email:</label><br>
     <input type="email" id="email" required><br><br>
@@ -17,24 +17,33 @@
     <label>Password:</label><br>
     <input type="password" id="password" required><br><br>
 
-    <button type="submit">Login</button>
+    <label>Confirm Password:</label><br>
+    <input type="password" id="confirmPassword" required><br><br>
+
+    <button type="submit">Register</button>
 
 </form>
 
 <p id="message"></p>
 
-<p>Don't have an account? <a href="/register">Register</a></p>
+<p>Already have an account? <a href="/">Login</a></p>
 
 <script>
 
-document.getElementById("loginForm").addEventListener("submit", async function(e) {
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
 
     e.preventDefault();
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
 
-    const response = await fetch("/login", {
+    if (password !== confirmPassword) {
+        document.getElementById("message").innerText = "Passwords do not match.";
+        return;
+    }
+
+    const response = await fetch("/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -46,8 +55,11 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     });
 
     const data = await response.json();
-
     document.getElementById("message").innerText = data.message;
+
+    if (response.ok) {
+        setTimeout(() => window.location.href = "/", 1500);
+    }
 
 });
 

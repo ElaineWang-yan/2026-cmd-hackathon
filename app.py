@@ -44,6 +44,16 @@ def login():
         return jsonify({"message": "Invalid email or password."}), 401
 
 
+@app.route("/create-post")
+def create_post():
+    return render_template("create_post.html")
+
+
+@app.route("/register", methods=["GET"])
+def register_page():
+    return render_template("register.html")
+
+
 @app.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
