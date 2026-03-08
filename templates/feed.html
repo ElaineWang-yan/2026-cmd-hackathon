@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedExperience</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f4f4f4;
+            color: #1a1a1a;
+        }
+
+        /* NAV */
+        nav {
+            display: flex;
+            align-items: center;
+            padding: 12px 40px;
+            border-bottom: 1px solid #ddd;
+            background: white;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-logo {
+            font-weight: bold;
+            font-size: 20px;
+            text-decoration: none;
+            color: inherit;
+            white-space: nowrap;
+        }
+
+        .nav-plus {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1.5px solid #ccc;
+            background: #f5f5f5;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-search {
+            flex: 1;
+            padding: 9px 20px;
+            border-radius: 25px;
+            border: 1px solid #ccc;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .nav-inbox {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1.5px solid #ccc;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        /* LAYOUT */
+        .layout {
+            display: flex;
+            max-width: 1100px;
+            margin: 28px auto;
+            gap: 24px;
+            padding: 0 24px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* MAIN */
+        .main { flex: 1; }
+
+        .medicine-heading {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .medicine-heading span {
+            font-size: 15px;
+            font-weight: 400;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        /* POST CARD */
+        .post-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+        }
+
+        .post-card-header {
+            margin-bottom: 14px;
+        }
+
+        .post-card-label-row {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .post-card-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .badge-yes { background: #dcfce7; color: #166534; }
+        .badge-no  { background: #fee2e2; color: #991b1b; }
+
+        .post-card ul {
+            padding-left: 18px;
+            list-style: disc;
+        }
+
+        .post-card ul li {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .empty-state {
+            color: #888;
+            font-size: 15px;
+            margin-top: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <a class="nav-logo" href="/">MedExperience</a>
+        <a class="nav-plus" href="/create-post" title="New Post">+</a>
+        <input class="nav-search" type="text" placeholder="Search drugs, side effects..." id="searchInput">
+        <div class="nav-inbox" title="Inbox">&#9993;</div>
+    </nav>
+
+    <!-- LAYOUT -->
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <h3>Filter</h3>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <div class="medicine-heading" id="medicineHeading">
+                Loading...<span>— shared experiences</span>
+            </div>
+            <div id="postList"></div>
+        </main>
+
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const medicine = params.get('medicine') || '';
+
+        document.getElementById('medicineHeading').innerHTML =
+            `${medicine}<span>— shared experiences</span>`;
+
+        document.getElementById('searchInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                window.location.href = '/feed?medicine=' + encodeURIComponent(this.value.trim());
+            }
+        });
+
+        function summarize(post) {
+            const bullets = [];
+
+            bullets.push(`Biological sex: ${formatValue(post.gender)}`);
+            bullets.push(`Dosage: ${post.dosage_amount} ${post.dosage_unit}, ${post.freq_count} time(s) per ${post.freq_per}`);
+            bullets.push(`Duration: ${post.duration_value} ${post.duration_unit}`);
+            bullets.push(`Achieved intended treatment effect: ${post.expected_effect}`);
+
+            if (post.gender === 'female') {
+                if (post.having_period) bullets.push('Was on menstrual period during medication');
+                if (post.was_pregnant) bullets.push('Was pregnant during medication');
+            }
+
+            // Split description into sentences as bullet points
+            const sentences = post.description
+                .split(/(?<=[.!?])\s+/)
+                .map(s => s.trim())
+                .filter(s => s.length > 4);
+            sentences.forEach(s => bullets.push(s));
+
+            if (post.long_term_meds) bullets.push(`Long-term medications: ${post.long_term_meds}`);
+            if (post.health_conditions) bullets.push(`Health conditions: ${post.health_conditions}`);
+            if (post.additional_notes) bullets.push(`Additional notes: ${post.additional_notes}`);
+
+            return bullets;
+        }
+
+        function formatValue(val) {
+            if (!val) return '—';
+            return val.charAt(0).toUpperCase() + val.slice(1).replace(/_/g, ' ');
+        }
+
+        function renderPost(post) {
+            const card = document.createElement('div');
+            card.className = 'post-card';
+
+            const hasUnlisted = post.unlisted_side_effects === 'yes';
+            const badgeClass = hasUnlisted ? 'badge-yes' : 'badge-no';
+            const badgeText = hasUnlisted ? 'Yes' : 'No';
+
+            const bullets = summarize(post);
+
+            card.innerHTML = `
+                <div class="post-card-header">
+                    <div class="post-card-label-row">Unlisted side effects on medication label or patient information leaflet</div>
+                    <div class="post-card-title">
+                        <span class="badge ${badgeClass}">${badgeText}</span>
+                    </div>
+                </div>
+                <ul>
+                    ${bullets.map(b => `<li>${b}</li>`).join('')}
+                </ul>
+            `;
+
+            document.getElementById('postList').appendChild(card);
+        }
+
+        async function loadPosts() {
+            const res = await fetch('/api/posts?medicine=' + encodeURIComponent(medicine));
+            const posts = await res.json();
+
+            if (posts.length === 0) {
+                document.getElementById('postList').innerHTML =
+                    '<p class="empty-state">No posts yet for this medication.</p>';
+                return;
+            }
+
+            posts.forEach(renderPost);
+        }
+
+        loadPosts();
+    </script>
+
+</body>
+</html>

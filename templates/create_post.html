@@ -215,7 +215,7 @@
             return show;
         }
 
-        document.getElementById('createPostForm').addEventListener('submit', function (e) {
+        document.getElementById('createPostForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             let hasError = false;
 
@@ -264,8 +264,17 @@
                 additionalNotes: document.getElementById('additionalNotes').value.trim(),
             };
 
-            console.log('Form submitted:', formData);
-            alert('Post submitted! Check the console for form data.');
+            const res = await fetch('/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                window.location.href = '/feed?medicine=' + encodeURIComponent(formData.drugName);
+            } else {
+                alert('Error: ' + result.message);
+            }
         });
     </script>
 
