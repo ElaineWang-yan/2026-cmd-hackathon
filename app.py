@@ -1,95 +1,80 @@
 from flask import Flask, request, jsonify, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
-import sqlite3
+import psycopg2
+import psycopg2.extras
 import os
 
 app = Flask(__name__)
 app.secret_key = "change_this_to_a_random_secret"
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
-DB_PATH = "users.db"
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+
+def get_conn():
+    return psycopg2.connect(DATABASE_URL)
 
 
 def init_db():
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS posts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                drug_name TEXT NOT NULL,
-                gender TEXT,
-                having_period INTEGER,
-                was_pregnant INTEGER,
-                dosage_amount REAL,
-                dosage_unit TEXT,
-                freq_count INTEGER,
-                freq_per TEXT,
-                duration_value INTEGER,
-                duration_unit TEXT,
-                expected_effect TEXT,
-                unlisted_side_effects TEXT,
-                description TEXT,
-                long_term_meds TEXT,
-                health_conditions TEXT,
-                additional_notes TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        """)
-        try:
-            conn.execute("ALTER TABLE posts ADD COLUMN user_id INTEGER REFERENCES users(id)")
-        except Exception:
-            pass
-
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS comments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                post_id INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
-                parent_id INTEGER DEFAULT NULL,
-                reply_to_email TEXT DEFAULT NULL,
-                content TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (post_id) REFERENCES posts(id),
-                FOREIGN KEY (user_id) REFERENCES users(id),
-                FOREIGN KEY (parent_id) REFERENCES comments(id)
-            )
-        """)
-        # Migrate existing comments table: add parent_id and reply_to_email if missing
-        try:
-            conn.execute("ALTER TABLE comments ADD COLUMN parent_id INTEGER DEFAULT NULL REFERENCES comments(id)")
-        except Exception:
-            pass
-        try:
-            conn.execute("ALTER TABLE comments ADD COLUMN reply_to_email TEXT DEFAULT NULL")
-        except Exception:
-            pass
-
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS survey_votes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                post_id INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
-                answer INTEGER NOT NULL DEFAULT 1,
-                UNIQUE(post_id, user_id),
-                FOREIGN KEY (post_id) REFERENCES posts(id),
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS inbox_read (
-                user_id INTEGER PRIMARY KEY,
-                last_read_at TIMESTAMP NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        """)
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    email TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS posts (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    drug_name TEXT NOT NULL,
+                    gender TEXT,
+                    having_period INTEGER,
+                    was_pregnant INTEGER,
+                    dosage_amount REAL,
+                    dosage_unit TEXT,
+                    freq_count INTEGER,
+                    freq_per TEXT,
+                    duration_value INTEGER,
+                    duration_unit TEXT,
+                    expected_effect TEXT,
+                    unlisted_side_effects TEXT,
+                    description TEXT,
+                    long_term_meds TEXT,
+                    health_conditions TEXT,
+                    additional_notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS comments (
+                    id SERIAL PRIMARY KEY,
+                    post_id INTEGER NOT NULL REFERENCES posts(id),
+                    user_id INTEGER NOT NULL REFERENCES users(id),
+                    parent_id INTEGER DEFAULT NULL REFERENCES comments(id),
+                    reply_to_email TEXT DEFAULT NULL,
+                    content TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS survey_votes (
+                    id SERIAL PRIMARY KEY,
+                    post_id INTEGER NOT NULL REFERENCES posts(id),
+                    user_id INTEGER NOT NULL REFERENCES users(id),
+                    answer INTEGER NOT NULL DEFAULT 1,
+                    UNIQUE(post_id, user_id)
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS inbox_read (
+                    user_id INTEGER PRIMARY KEY REFERENCES users(id),
+                    last_read_at TIMESTAMP NOT NULL
+                )
+            """)
         conn.commit()
 
 
@@ -139,10 +124,10 @@ def login():
     if not email or not password:
         return jsonify({"message": "Email and password are required."}), 400
 
-    with sqlite3.connect(DB_PATH) as conn:
-        row = conn.execute(
-            "SELECT id, password FROM users WHERE email = ?", (email,)
-        ).fetchone()
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, password FROM users WHERE email = %s", (email,))
+            row = cur.fetchone()
 
     if row and check_password_hash(row[1], password):
         session["user_id"] = row[0]
@@ -163,13 +148,15 @@ def register():
 
     hashed = generate_password_hash(password, method='pbkdf2:sha256')
     try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.execute(
-                "INSERT INTO users (email, password) VALUES (?, ?)", (email, hashed)
-            )
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO users (email, password) VALUES (%s, %s)",
+                    (email, hashed)
+                )
             conn.commit()
         return jsonify({"message": "User registered successfully!"}), 201
-    except sqlite3.IntegrityError:
+    except psycopg2.IntegrityError:
         return jsonify({"message": "Email already registered."}), 409
 
 
@@ -182,27 +169,28 @@ def save_post():
     duration = data.get("duration", {})
     user_id  = session.get("user_id")
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("""
-            INSERT INTO posts (
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO posts (
+                    user_id,
+                    drug_name, gender, having_period, was_pregnant,
+                    dosage_amount, dosage_unit, freq_count, freq_per,
+                    duration_value, duration_unit,
+                    expected_effect, unlisted_side_effects, description,
+                    long_term_meds, health_conditions, additional_notes
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """, (
                 user_id,
-                drug_name, gender, having_period, was_pregnant,
-                dosage_amount, dosage_unit, freq_count, freq_per,
-                duration_value, duration_unit,
-                expected_effect, unlisted_side_effects, description,
-                long_term_meds, health_conditions, additional_notes
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """, (
-            user_id,
-            data.get("drugName"), data.get("gender"),
-            int(data.get("havingPeriod", False)), int(data.get("wasPregnant", False)),
-            dosage.get("amount"), dosage.get("unit"),
-            dosage.get("frequency"), dosage.get("per"),
-            duration.get("value"), duration.get("unit"),
-            data.get("expectedEffect"), data.get("differentFromExpected"),
-            data.get("description"),
-            data.get("longTermMeds"), data.get("healthConditions"), data.get("additionalNotes")
-        ))
+                data.get("drugName"), data.get("gender"),
+                int(data.get("havingPeriod", False)), int(data.get("wasPregnant", False)),
+                dosage.get("amount"), dosage.get("unit"),
+                dosage.get("frequency"), dosage.get("per"),
+                duration.get("value"), duration.get("unit"),
+                data.get("expectedEffect"), data.get("differentFromExpected"),
+                data.get("description"),
+                data.get("longTermMeds"), data.get("healthConditions"), data.get("additionalNotes")
+            ))
         conn.commit()
     return jsonify({"message": "Post saved.", "drug": data.get("drugName")}), 201
 
@@ -215,17 +203,17 @@ def get_posts():
     unlisted        = request.args.get("unlisted_side_effects", "").strip().lower()
     duration_bucket = request.args.get("duration", "").strip().lower()
 
-    query  = "SELECT * FROM posts WHERE LOWER(drug_name) = ?"
+    query  = "SELECT * FROM posts WHERE LOWER(drug_name) = %s"
     params = [medicine]
 
     if gender:
-        query += " AND LOWER(gender) = ?"
+        query += " AND LOWER(gender) = %s"
         params.append(gender)
     if expected_effect:
-        query += " AND LOWER(expected_effect) = ?"
+        query += " AND LOWER(expected_effect) = %s"
         params.append(expected_effect)
     if unlisted:
-        query += " AND LOWER(unlisted_side_effects) = ?"
+        query += " AND LOWER(unlisted_side_effects) = %s"
         params.append(unlisted)
 
     if duration_bucket == "short":
@@ -254,18 +242,20 @@ def get_posts():
 
     query += " ORDER BY created_at ASC"
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(query, params).fetchall()
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(query, params)
+            rows = cur.fetchall()
 
     return jsonify([dict(r) for r in rows])
 
 
 @app.route("/api/posts/<int:post_id>")
 def get_post(post_id):
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        row = conn.execute("SELECT * FROM posts WHERE id = ?", (post_id,)).fetchone()
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM posts WHERE id = %s", (post_id,))
+            row = cur.fetchone()
     if not row:
         return jsonify({"error": "Post not found"}), 404
     return jsonify(dict(row))
@@ -275,20 +265,20 @@ def get_post(post_id):
 
 @app.route("/api/posts/<int:post_id>/comments", methods=["GET"])
 def get_comments(post_id):
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute("""
-            SELECT c.id, c.post_id, c.user_id, c.parent_id, c.reply_to_email,
-                   c.content, c.created_at, u.email AS author_email
-            FROM comments c
-            JOIN users u ON c.user_id = u.id
-            WHERE c.post_id = ?
-            ORDER BY c.created_at ASC
-        """, (post_id,)).fetchall()
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT c.id, c.post_id, c.user_id, c.parent_id, c.reply_to_email,
+                       c.content, c.created_at, u.email AS author_email
+                FROM comments c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.post_id = %s
+                ORDER BY c.created_at ASC
+            """, (post_id,))
+            rows = cur.fetchall()
 
     all_comments = [dict(r) for r in rows]
 
-    # Build nested structure: top-level + replies grouped by parent_id
     top_level = [c for c in all_comments if c["parent_id"] is None]
     replies_by_parent = {}
     for c in all_comments:
@@ -309,17 +299,18 @@ def add_comment(post_id):
 
     data           = request.get_json()
     content        = data.get("content", "").strip()
-    parent_id      = data.get("parent_id")       # None for top-level
-    reply_to_email = data.get("reply_to_email")  # email of person being replied to
+    parent_id      = data.get("parent_id")
+    reply_to_email = data.get("reply_to_email")
 
     if not content:
         return jsonify({"error": "Comment cannot be empty"}), 400
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute(
-            "INSERT INTO comments (post_id, user_id, parent_id, reply_to_email, content) VALUES (?, ?, ?, ?, ?)",
-            (post_id, user_id, parent_id, reply_to_email, content)
-        )
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO comments (post_id, user_id, parent_id, reply_to_email, content) VALUES (%s, %s, %s, %s, %s)",
+                (post_id, user_id, parent_id, reply_to_email, content)
+            )
         conn.commit()
     return jsonify({"message": "Comment added"}), 201
 
@@ -330,15 +321,15 @@ def delete_comment(comment_id):
     if not user_id:
         return jsonify({"error": "Not logged in"}), 401
 
-    with sqlite3.connect(DB_PATH) as conn:
-        row = conn.execute(
-            "SELECT user_id FROM comments WHERE id = ?", (comment_id,)
-        ).fetchone()
-        if not row:
-            return jsonify({"error": "Comment not found"}), 404
-        if row[0] != user_id:
-            return jsonify({"error": "Not your comment"}), 403
-        conn.execute("DELETE FROM comments WHERE id = ?", (comment_id,))
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT user_id FROM comments WHERE id = %s", (comment_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"error": "Comment not found"}), 404
+            if row[0] != user_id:
+                return jsonify({"error": "Not your comment"}), 403
+            cur.execute("DELETE FROM comments WHERE id = %s", (comment_id,))
         conn.commit()
     return jsonify({"message": "Deleted"}), 200
 
@@ -348,22 +339,19 @@ def delete_comment(comment_id):
 @app.route("/api/posts/<int:post_id>/survey", methods=["GET"])
 def get_survey(post_id):
     user_id = session.get("user_id")
-    with sqlite3.connect(DB_PATH) as conn:
-        yes_count = conn.execute(
-            "SELECT COUNT(*) FROM survey_votes WHERE post_id = ? AND answer = 1", (post_id,)
-        ).fetchone()[0]
-        no_count = conn.execute(
-            "SELECT COUNT(*) FROM survey_votes WHERE post_id = ? AND answer = 0", (post_id,)
-        ).fetchone()[0]
-        total     = yes_count + no_count
-        user_vote = None
-        if user_id:
-            row = conn.execute(
-                "SELECT answer FROM survey_votes WHERE post_id = ? AND user_id = ?",
-                (post_id, user_id)
-            ).fetchone()
-            if row is not None:
-                user_vote = "yes" if row[0] == 1 else "no"
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM survey_votes WHERE post_id = %s AND answer = 1", (post_id,))
+            yes_count = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) FROM survey_votes WHERE post_id = %s AND answer = 0", (post_id,))
+            no_count = cur.fetchone()[0]
+            total    = yes_count + no_count
+            user_vote = None
+            if user_id:
+                cur.execute("SELECT answer FROM survey_votes WHERE post_id = %s AND user_id = %s", (post_id, user_id))
+                row = cur.fetchone()
+                if row is not None:
+                    user_vote = "yes" if row[0] == 1 else "no"
     return jsonify({"yes_count": yes_count, "no_count": no_count, "total": total, "user_vote": user_vote})
 
 
@@ -376,35 +364,28 @@ def vote_survey(post_id):
     data   = request.get_json()
     answer = data.get("answer")
 
-    with sqlite3.connect(DB_PATH) as conn:
-        if answer is None:
-            conn.execute(
-                "DELETE FROM survey_votes WHERE post_id = ? AND user_id = ?",
-                (post_id, user_id)
-            )
-        else:
-            answer_int = 1 if answer == "yes" else 0
-            conn.execute(
-                "INSERT INTO survey_votes (post_id, user_id, answer) VALUES (?, ?, ?) "
-                "ON CONFLICT(post_id, user_id) DO UPDATE SET answer = ?",
-                (post_id, user_id, answer_int, answer_int)
-            )
-        conn.commit()
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            if answer is None:
+                cur.execute("DELETE FROM survey_votes WHERE post_id = %s AND user_id = %s", (post_id, user_id))
+            else:
+                answer_int = 1 if answer == "yes" else 0
+                cur.execute("""
+                    INSERT INTO survey_votes (post_id, user_id, answer) VALUES (%s, %s, %s)
+                    ON CONFLICT(post_id, user_id) DO UPDATE SET answer = %s
+                """, (post_id, user_id, answer_int, answer_int))
 
-        yes_count = conn.execute(
-            "SELECT COUNT(*) FROM survey_votes WHERE post_id = ? AND answer = 1", (post_id,)
-        ).fetchone()[0]
-        no_count = conn.execute(
-            "SELECT COUNT(*) FROM survey_votes WHERE post_id = ? AND answer = 0", (post_id,)
-        ).fetchone()[0]
-        total     = yes_count + no_count
-        user_vote = None
-        row = conn.execute(
-            "SELECT answer FROM survey_votes WHERE post_id = ? AND user_id = ?",
-            (post_id, user_id)
-        ).fetchone()
-        if row is not None:
-            user_vote = "yes" if row[0] == 1 else "no"
+            cur.execute("SELECT COUNT(*) FROM survey_votes WHERE post_id = %s AND answer = 1", (post_id,))
+            yes_count = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) FROM survey_votes WHERE post_id = %s AND answer = 0", (post_id,))
+            no_count = cur.fetchone()[0]
+            total    = yes_count + no_count
+            user_vote = None
+            cur.execute("SELECT answer FROM survey_votes WHERE post_id = %s AND user_id = %s", (post_id, user_id))
+            row = cur.fetchone()
+            if row is not None:
+                user_vote = "yes" if row[0] == 1 else "no"
+        conn.commit()
 
     return jsonify({"yes_count": yes_count, "no_count": no_count, "total": total, "user_vote": user_vote})
 
@@ -428,12 +409,13 @@ def my_posts():
     if not user_id:
         return jsonify({"error": "Not logged in"}), 401
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            "SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC",
-            (user_id,)
-        ).fetchall()
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                "SELECT * FROM posts WHERE user_id = %s ORDER BY created_at DESC",
+                (user_id,)
+            )
+            rows = cur.fetchall()
     return jsonify([dict(r) for r in rows])
 
 
@@ -443,39 +425,38 @@ def my_inbox():
     if not user_id:
         return jsonify({"error": "Not logged in"}), 401
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT last_read_at FROM inbox_read WHERE user_id = %s", (user_id,))
+            lr = cur.fetchone()
+            last_read_at = lr["last_read_at"] if lr else None
 
-        lr = conn.execute(
-            "SELECT last_read_at FROM inbox_read WHERE user_id = ?", (user_id,)
-        ).fetchone()
-        last_read_at = lr["last_read_at"] if lr else None
-
-        rows = conn.execute("""
-            SELECT
-                c.id         AS comment_id,
-                c.content    AS comment_content,
-                c.created_at AS created_at,
-                c.user_id    AS commenter_id,
-                u.email      AS commenter_email,
-                p.id         AS post_id,
-                p.drug_name  AS drug_name
-            FROM comments c
-            JOIN posts  p ON c.post_id = p.id
-            JOIN users  u ON c.user_id = u.id
-            WHERE p.user_id = ?
-              AND c.user_id != ?
-            ORDER BY c.created_at DESC
-        """, (user_id, user_id)).fetchall()
+            cur.execute("""
+                SELECT
+                    c.id         AS comment_id,
+                    c.content    AS comment_content,
+                    c.created_at AS created_at,
+                    c.user_id    AS commenter_id,
+                    u.email      AS commenter_email,
+                    p.id         AS post_id,
+                    p.drug_name  AS drug_name
+                FROM comments c
+                JOIN posts  p ON c.post_id = p.id
+                JOIN users  u ON c.user_id = u.id
+                WHERE p.user_id = %s
+                  AND c.user_id != %s
+                ORDER BY c.created_at DESC
+            """, (user_id, user_id))
+            rows = cur.fetchall()
 
     items = []
     for r in rows:
         d = dict(r)
-        d["is_new"] = (last_read_at is None) or (d["created_at"] > last_read_at)
+        d["is_new"] = (last_read_at is None) or (str(d["created_at"]) > str(last_read_at))
         items.append(d)
 
     unread_count = sum(1 for i in items if i["is_new"])
-    return jsonify({"items": items, "unread_count": unread_count, "last_read_at": last_read_at})
+    return jsonify({"items": items, "unread_count": unread_count, "last_read_at": str(last_read_at) if last_read_at else None})
 
 
 @app.route("/api/me/inbox/read", methods=["POST"])
@@ -484,11 +465,12 @@ def mark_inbox_read():
     if not user_id:
         return jsonify({"error": "Not logged in"}), 401
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("""
-            INSERT INTO inbox_read (user_id, last_read_at) VALUES (?, CURRENT_TIMESTAMP)
-            ON CONFLICT(user_id) DO UPDATE SET last_read_at = CURRENT_TIMESTAMP
-        """, (user_id,))
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO inbox_read (user_id, last_read_at) VALUES (%s, CURRENT_TIMESTAMP)
+                ON CONFLICT(user_id) DO UPDATE SET last_read_at = CURRENT_TIMESTAMP
+            """, (user_id,))
         conn.commit()
     return jsonify({"message": "Marked as read"})
 

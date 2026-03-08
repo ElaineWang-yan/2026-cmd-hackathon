@@ -1,5 +1,4 @@
 flask
 werkzeug
 gunicorn
-pymongo
-dnspython
+psycopg2-binary
