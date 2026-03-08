@@ -21,37 +21,19 @@
             --shadow-md: 0 4px 16px rgba(26,26,24,0.1), 0 12px 32px rgba(26,26,24,0.08);
         }
 
-        body {
-            font-family: 'Nunito', sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            min-height: 100vh;
-        }
+        body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
 
         body::before {
-            content: '';
-            position: fixed; inset: 0;
+            content: ''; position: fixed; inset: 0;
             background-image: radial-gradient(circle, #c8c7c0 1px, transparent 1px);
-            background-size: 28px 28px;
-            opacity: 0.45;
-            pointer-events: none;
-            z-index: 0;
+            background-size: 28px 28px; opacity: 0.45; pointer-events: none; z-index: 0;
         }
 
         /* NAVBAR */
         .navbar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-            height: 60px;
-            background: rgba(255,255,255,0.88);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 28px;
-            gap: 16px;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 60px;
+            background: rgba(255,255,255,0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 16px;
         }
         .nav-logo { display: flex; align-items: baseline; gap: 1px; text-decoration: none; flex-shrink: 0; margin-right: 8px; }
         .logo-med { font-family: 'Lora', serif; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.01em; }
@@ -60,9 +42,8 @@
         .nav-search { flex: 1; max-width: 440px; position: relative; }
         .nav-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
         .nav-search input {
-            width: 100%; padding: 8px 14px 8px 36px;
-            background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px;
-            font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--ink);
+            width: 100%; padding: 8px 14px 8px 36px; background: var(--bg); border: 1.5px solid var(--border);
+            border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--ink);
             transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
         }
         .nav-search input::placeholder { color: var(--ink-faint); }
@@ -106,10 +87,7 @@
         .dropdown-divider { height: 1px; background: var(--border); }
 
         /* PAGE */
-        .page-wrap {
-            position: relative; z-index: 1;
-            max-width: 720px; margin: 88px auto 60px; padding: 0 24px;
-        }
+        .page-wrap { position: relative; z-index: 1; max-width: 720px; margin: 88px auto 60px; padding: 0 24px; }
         .back-link {
             display: inline-flex; align-items: center; gap: 6px;
             font-size: 13px; font-weight: 600; color: var(--ink-muted);
@@ -135,12 +113,8 @@
             border-radius: 14px; padding: 22px 24px; margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(26,26,24,0.05);
         }
-        .survey-question {
-            font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 16px;
-        }
-        .survey-buttons {
-            display: flex; gap: 10px; margin-bottom: 16px;
-        }
+        .survey-question { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 16px; }
+        .survey-buttons  { display: flex; gap: 10px; margin-bottom: 16px; }
         .btn-vote {
             padding: 9px 24px; border-radius: 8px; font-family: 'Nunito', sans-serif;
             font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
@@ -148,41 +122,21 @@
             border: 1.5px solid var(--border); background: var(--surface); color: var(--ink-muted);
         }
         .btn-vote:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
-        .btn-vote.active-yes {
-            background: var(--accent); color: #fff; border-color: var(--accent);
-            box-shadow: 0 2px 8px rgba(42,107,82,0.2);
-        }
-        .btn-vote.active-no {
-            background: #fee2e2; color: #991b1b; border-color: #fca5a5;
-        }
-
-        /* PROGRESS BAR */
+        .btn-vote.active-yes { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(42,107,82,0.2); }
+        .btn-vote.active-no  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
         .survey-results { margin-top: 4px; }
-        .survey-row {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
-        }
-        .survey-row-label {
-            font-size: 12px; font-weight: 600; color: var(--ink-muted);
-            width: 28px; flex-shrink: 0;
-        }
-        .survey-bar-wrap {
-            flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden;
-        }
-        .survey-bar {
-            height: 100%; border-radius: 99px;
-            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-        }
+        .survey-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .survey-row-label { font-size: 12px; font-weight: 600; color: var(--ink-muted); width: 28px; flex-shrink: 0; }
+        .survey-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+        .survey-bar { height: 100%; border-radius: 99px; transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
         .survey-bar.yes { background: var(--accent); }
         .survey-bar.no  { background: #fca5a5; }
-        .survey-row-count {
-            font-size: 12px; color: var(--ink-faint); width: 60px; text-align: right; flex-shrink: 0;
-        }
-        .survey-total {
-            font-size: 12px; color: var(--ink-faint); margin-top: 6px;
-        }
+        .survey-row-count { font-size: 12px; color: var(--ink-faint); width: 60px; text-align: right; flex-shrink: 0; }
+        .survey-total { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
 
         /* COMMENTS */
         .section-title { font-family: 'Lora', serif; font-size: 18px; font-weight: 500; color: var(--ink); margin-bottom: 14px; letter-spacing: -0.01em; }
+
         .comment-box {
             background: var(--surface); border: 1px solid var(--border);
             border-radius: 14px; padding: 20px 24px; margin-bottom: 16px;
@@ -207,18 +161,41 @@
         }
         .btn-submit:hover { background: var(--accent-hover); transform: translateY(-1px); }
         .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn-cancel {
+            padding: 8px 14px; background: none; color: var(--ink-muted);
+            border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+            cursor: pointer; margin-left: 8px; transition: border-color 0.15s, color 0.15s;
+        }
+        .btn-cancel:hover { border-color: var(--ink-muted); color: var(--ink); }
 
+        /* TOP-LEVEL COMMENT CARD */
         .comment-card {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;
-            display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+            border-radius: 12px; margin-bottom: 10px;
             box-shadow: 0 1px 4px rgba(26,26,24,0.04);
             animation: fadeUp 0.2s ease both;
+            overflow: hidden;
         }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        .comment-body { flex: 1; }
+
+        .comment-main {
+            padding: 16px 20px;
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+        }
+        .comment-body { flex: 1; min-width: 0; }
         .comment-content { font-size: 14px; font-weight: 300; color: var(--ink-muted); line-height: 1.7; }
-        .comment-meta { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+        .comment-meta { font-size: 11px; color: var(--ink-faint); margin-top: 5px; }
+
+        .comment-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .btn-reply {
+            background: none; border: none; color: var(--ink-faint);
+            cursor: pointer; font-size: 12px; font-weight: 600;
+            font-family: 'Nunito', sans-serif;
+            padding: 3px 8px; border-radius: 6px;
+            transition: color 0.15s, background 0.15s;
+        }
+        .btn-reply:hover { color: var(--accent); background: var(--accent-light); }
         .btn-delete {
             background: none; border: none; color: var(--ink-faint);
             cursor: pointer; font-size: 13px; padding: 3px 7px;
@@ -226,6 +203,62 @@
             transition: color 0.15s, background 0.15s;
         }
         .btn-delete:hover { color: #c0392b; background: #fdf2f2; }
+
+        /* EXPAND REPLIES TOGGLE */
+        .replies-toggle {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 20px 10px;
+            background: none; border: none; border-top: 1px solid var(--border);
+            width: 100%; text-align: left; cursor: pointer;
+            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 600;
+            color: var(--accent); transition: background 0.12s;
+        }
+        .replies-toggle:hover { background: var(--accent-light); }
+        .toggle-arrow { font-size: 10px; transition: transform 0.2s; display: inline-block; }
+        .toggle-arrow.open { transform: rotate(90deg); }
+
+        /* REPLIES SECTION */
+        .replies-section { display: none; border-top: 1px solid var(--border); background: #faf9f6; }
+        .replies-section.open { display: block; }
+
+        /* REPLY CARD */
+        .reply-card {
+            padding: 13px 20px 13px 36px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+            position: relative;
+        }
+        .reply-card:last-child { border-bottom: none; }
+        .reply-card::before {
+            content: ''; position: absolute; left: 20px; top: 18px;
+            width: 10px; height: 1px; background: var(--border);
+        }
+        .reply-body { flex: 1; min-width: 0; }
+        .reply-content { font-size: 13.5px; font-weight: 300; color: var(--ink-muted); line-height: 1.65; }
+        .reply-mention { color: var(--accent); font-weight: 600; }
+        .reply-meta { font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+
+        /* INLINE REPLY COMPOSE */
+        .reply-compose {
+            display: none;
+            padding: 12px 20px 14px 36px;
+            border-top: 1px solid var(--border);
+            background: #faf9f6;
+        }
+        .reply-compose.open { display: block; }
+        .reply-to-label { font-size: 11px; color: var(--ink-faint); margin-bottom: 7px; }
+        .reply-to-label span { color: var(--accent); font-weight: 600; }
+        .reply-input {
+            width: 100%; min-height: 60px; resize: vertical;
+            border: 1.5px solid var(--border); border-radius: 8px;
+            padding: 8px 12px; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 300; color: var(--ink);
+            background: var(--surface); margin-bottom: 10px;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .reply-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,107,82,0.1); }
+        .reply-actions { display: flex; align-items: center; gap: 8px; }
+
         .no-comments { text-align: center; color: var(--ink-faint); font-size: 14px; padding: 32px 0; }
     </style>
 </head>
@@ -255,7 +288,7 @@
             <button class="profile-avatar" id="profileBtn">U</button>
             <div class="dropdown" id="dropdown">
                 <div class="dropdown-email" id="navEmail">—</div>
-                <a href="#" class="dropdown-item">My profile</a>
+                <a href="/profile" class="dropdown-item">My profile</a>
                 <div class="dropdown-divider"></div>
                 <a href="/" class="dropdown-item danger">Log out</a>
             </div>
@@ -321,15 +354,20 @@
         // ── STATE ──
         const params = new URLSearchParams(window.location.search);
         const postId = params.get('id');
-        let CURRENT_USER_ID = null;
-        let currentVote = null; // "yes", "no", or null
+        let CURRENT_USER_ID    = null;
+        let CURRENT_USER_EMAIL = null;
+        let currentVote        = null;
 
-        // ── LOAD CURRENT USER ──
+        // ── LOAD ME ──
         async function loadMe() {
             const res  = await fetch('/api/me', { credentials: 'include' });
             const data = await res.json();
-            CURRENT_USER_ID = data.user_id;
-            if (data.email) document.getElementById('navEmail').textContent = data.email;
+            CURRENT_USER_ID    = data.user_id;
+            CURRENT_USER_EMAIL = data.email;
+            if (data.email) {
+                document.getElementById('navEmail').textContent   = data.email;
+                document.getElementById('profileBtn').textContent = data.email[0].toUpperCase();
+            }
         }
 
         // ── POST ──
@@ -359,24 +397,17 @@
         function updateSurveyUI(data) {
             currentVote = data.user_vote || null;
             const total = data.total || 0;
-
-            // update button states
-            const btnYes = document.getElementById('btnYes');
-            const btnNo  = document.getElementById('btnNo');
-            btnYes.className = 'btn-vote' + (currentVote === 'yes' ? ' active-yes' : '');
-            btnNo.className  = 'btn-vote' + (currentVote === 'no'  ? ' active-no'  : '');
-
-            // show results if anyone has voted
+            document.getElementById('btnYes').className = 'btn-vote' + (currentVote === 'yes' ? ' active-yes' : '');
+            document.getElementById('btnNo').className  = 'btn-vote' + (currentVote === 'no'  ? ' active-no'  : '');
             const resultsEl = document.getElementById('surveyResults');
             if (total > 0) {
                 resultsEl.style.display = 'block';
                 const yesPct = Math.round((data.yes_count / total) * 100);
                 const noPct  = Math.round((data.no_count  / total) * 100);
-
-                document.getElementById('barYes').style.width  = yesPct + '%';
-                document.getElementById('barNo').style.width   = noPct  + '%';
+                document.getElementById('barYes').style.width   = yesPct + '%';
+                document.getElementById('barNo').style.width    = noPct  + '%';
                 document.getElementById('countYes').textContent = `${data.yes_count} (${yesPct}%)`;
-                document.getElementById('countNo').textContent  = `${data.no_count}  (${noPct}%)`;
+                document.getElementById('countNo').textContent  = `${data.no_count} (${noPct}%)`;
                 document.getElementById('surveyTotal').textContent =
                     `${data.yes_count} out of ${total} ${total === 1 ? 'person' : 'people'} had a similar experience`;
             } else {
@@ -385,23 +416,17 @@
         }
 
         async function vote(answer) {
-            // clicking same button again = unvote
             const payload = currentVote === answer ? null : answer;
-            const res  = await fetch(`/api/posts/${postId}/survey`, {
-                method:      'POST',
-                credentials: 'include',
-                headers:     { 'Content-Type': 'application/json' },
-                body:        JSON.stringify({ answer: payload })
+            const res = await fetch(`/api/posts/${postId}/survey`, {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answer: payload })
             });
-            if (res.status === 401) {
-                alert('Please log in to vote.');
-                return;
-            }
-            const data = await res.json();
-            updateSurveyUI(data);
+            if (res.status === 401) { alert('Please log in to vote.'); return; }
+            updateSurveyUI(await res.json());
         }
 
-        // ── COMMENTS ──
+        // ── LOAD COMMENTS ──
         async function loadComments() {
             const res      = await fetch(`/api/posts/${postId}/comments`, { credentials: 'include' });
             const comments = await res.json();
@@ -411,57 +436,223 @@
                 list.innerHTML = '<div class="no-comments">No comments yet — be the first to share.</div>';
                 return;
             }
-            comments.forEach(renderComment);
+            comments.forEach(c => list.appendChild(buildCommentCard(c)));
         }
 
-        function renderComment(c) {
-            const card = document.createElement('div');
-            card.className = 'comment-card';
-            card.id = `comment-${c.id}`;
-            const isOwn = CURRENT_USER_ID && c.user_id === CURRENT_USER_ID;
-            const date  = new Date(c.created_at).toLocaleDateString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric'
-            });
-            card.innerHTML = `
+        // ── BUILD COMMENT CARD ──
+        function buildCommentCard(c) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'comment-card';
+            wrapper.id = `comment-${c.id}`;
+
+            const isOwn      = CURRENT_USER_ID && c.user_id === CURRENT_USER_ID;
+            const date       = formatDate(c.created_at);
+            const replies    = c.replies || [];
+            const hasReplies = replies.length > 0;
+
+            // Main comment row
+            const main = document.createElement('div');
+            main.className = 'comment-main';
+            main.innerHTML = `
                 <div class="comment-body">
-                    <div class="comment-content">${c.content}</div>
+                    <div class="comment-content">${escapeHtml(c.content)}</div>
                     <div class="comment-meta">${date}</div>
                 </div>
-                ${isOwn ? `<button class="btn-delete" onclick="deleteComment(${c.id})" title="Delete">✕</button>` : ''}
+                <div class="comment-actions">
+                    <button class="btn-reply" onclick="openReplyBox(${c.id}, '${escapeAttr(c.author_email)}')">Reply</button>
+                    ${isOwn ? `<button class="btn-delete" onclick="deleteComment(${c.id})" title="Delete">✕</button>` : ''}
+                </div>
             `;
-            document.getElementById('commentList').appendChild(card);
+            wrapper.appendChild(main);
+
+            // Replies section
+            const repliesSection = document.createElement('div');
+            repliesSection.className = 'replies-section';
+            repliesSection.id = `replies-${c.id}`;
+
+            replies.forEach(r => {
+                const replyEl = document.createElement('div');
+                replyEl.className = 'reply-card';
+                replyEl.id = `comment-${r.id}`;
+                const isOwnReply = CURRENT_USER_ID && r.user_id === CURRENT_USER_ID;
+                const mention    = r.reply_to_email
+                    ? `<span class="reply-mention">@${r.reply_to_email}</span> `
+                    : '';
+                replyEl.innerHTML = `
+                    <div class="reply-body">
+                        <div class="reply-content">${mention}${escapeHtml(r.content)}</div>
+                        <div class="reply-meta">${formatDate(r.created_at)}</div>
+                    </div>
+                    <div class="comment-actions">
+                        <button class="btn-reply" onclick="openReplyBox(${c.id}, '${escapeAttr(r.author_email)}')">Reply</button>
+                        ${isOwnReply ? `<button class="btn-delete" onclick="deleteComment(${r.id})" title="Delete">✕</button>` : ''}
+                    </div>
+                `;
+                repliesSection.appendChild(replyEl);
+            });
+
+            // Inline reply compose box
+            const compose = document.createElement('div');
+            compose.className = 'reply-compose';
+            compose.id = `compose-${c.id}`;
+            compose.innerHTML = `
+                <div class="reply-to-label" id="reply-to-label-${c.id}">Replying to <span></span></div>
+                <textarea class="reply-input" id="reply-input-${c.id}" placeholder="Write a reply…"></textarea>
+                <div class="reply-actions">
+                    <button class="btn-submit" onclick="submitReply(${c.id})">Post reply</button>
+                    <button class="btn-cancel" onclick="closeReplyBox(${c.id})">Cancel</button>
+                </div>
+            `;
+            repliesSection.appendChild(compose);
+            wrapper.appendChild(repliesSection);
+
+            // Toggle button (only if replies exist)
+            if (hasReplies) {
+                const toggle = document.createElement('button');
+                toggle.className = 'replies-toggle';
+                toggle.id = `toggle-${c.id}`;
+                toggle.innerHTML = `<span class="toggle-arrow" id="arrow-${c.id}">›</span> ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`;
+                toggle.onclick = () => toggleReplies(c.id);
+                wrapper.insertBefore(toggle, repliesSection);
+            }
+
+            return wrapper;
         }
 
+        // ── TOGGLE REPLIES ──
+        function toggleReplies(commentId) {
+            const section = document.getElementById(`replies-${commentId}`);
+            const arrow   = document.getElementById(`arrow-${commentId}`);
+            const isOpen  = section.classList.contains('open');
+            section.classList.toggle('open', !isOpen);
+            if (arrow) arrow.classList.toggle('open', !isOpen);
+        }
+
+        // ── OPEN / CLOSE REPLY BOX ──
+        function openReplyBox(commentId, replyToEmail) {
+            // Close all other open reply boxes
+            document.querySelectorAll('.reply-compose.open').forEach(el => el.classList.remove('open'));
+
+            const compose = document.getElementById(`compose-${commentId}`);
+            const label   = document.getElementById(`reply-to-label-${commentId}`);
+            const input   = document.getElementById(`reply-input-${commentId}`);
+
+            label.querySelector('span').textContent = replyToEmail;
+            compose.dataset.replyToEmail = replyToEmail;
+
+            // Ensure replies section is open
+            const section = document.getElementById(`replies-${commentId}`);
+            section.classList.add('open');
+            const arrow = document.getElementById(`arrow-${commentId}`);
+            if (arrow) arrow.classList.add('open');
+
+            // Create toggle if this comment had 0 replies before
+            ensureToggle(commentId);
+
+            compose.classList.add('open');
+            input.focus();
+        }
+
+        function closeReplyBox(commentId) {
+            document.getElementById(`compose-${commentId}`).classList.remove('open');
+            document.getElementById(`reply-input-${commentId}`).value = '';
+        }
+
+        function ensureToggle(commentId) {
+            if (!document.getElementById(`toggle-${commentId}`)) {
+                const card    = document.getElementById(`comment-${commentId}`);
+                const section = document.getElementById(`replies-${commentId}`);
+                const toggle  = document.createElement('button');
+                toggle.className = 'replies-toggle';
+                toggle.id = `toggle-${commentId}`;
+                toggle.innerHTML = `<span class="toggle-arrow open" id="arrow-${commentId}">›</span> 0 replies`;
+                toggle.onclick = () => toggleReplies(commentId);
+                card.insertBefore(toggle, section);
+            }
+        }
+
+        // ── SUBMIT TOP-LEVEL COMMENT ──
         async function submitComment() {
             const input   = document.getElementById('commentInput');
             const btn     = document.getElementById('submitBtn');
             const content = input.value.trim();
             if (!content) return;
-            btn.disabled    = true;
+
+            btn.disabled = true;
             btn.textContent = 'Posting…';
             const res = await fetch(`/api/posts/${postId}/comments`, {
-                method:      'POST',
-                credentials: 'include',
-                headers:     { 'Content-Type': 'application/json' },
-                body:        JSON.stringify({ content })
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
             });
-            btn.disabled    = false;
+            btn.disabled = false;
             btn.textContent = 'Post comment';
-            if (res.status === 401) {
-                alert('Please log in to post a comment.');
-                return;
-            }
+            if (res.status === 401) { alert('Please log in to post a comment.'); return; }
             input.value = '';
             loadComments();
         }
 
+        // ── SUBMIT REPLY ──
+        async function submitReply(parentCommentId) {
+            const compose      = document.getElementById(`compose-${parentCommentId}`);
+            const input        = document.getElementById(`reply-input-${parentCommentId}`);
+            const replyToEmail = compose.dataset.replyToEmail || null;
+            const content      = input.value.trim();
+            if (!content) return;
+
+            const submitBtn = compose.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting…';
+
+            const res = await fetch(`/api/posts/${postId}/comments`, {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content,
+                    parent_id:      parentCommentId,
+                    reply_to_email: replyToEmail
+                })
+            });
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Post reply';
+            if (res.status === 401) { alert('Please log in to reply.'); return; }
+
+            input.value = '';
+            closeReplyBox(parentCommentId);
+
+            // Remember which reply sections are currently open
+            const openIds = [...document.querySelectorAll('.replies-section.open')]
+                .map(el => el.id.replace('replies-', ''));
+
+            await loadComments();
+
+            // Restore open state, and force-open the one just replied to
+            const toOpen = new Set([...openIds, String(parentCommentId)]);
+            toOpen.forEach(id => {
+                const section = document.getElementById(`replies-${id}`);
+                const arrow   = document.getElementById(`arrow-${id}`);
+                if (section) section.classList.add('open');
+                if (arrow)   arrow.classList.add('open');
+            });
+        }
+
+        // ── DELETE ──
         async function deleteComment(commentId) {
             await fetch(`/api/comments/${commentId}`, { method: 'DELETE', credentials: 'include' });
-            document.getElementById(`comment-${commentId}`)?.remove();
-            if (!document.getElementById('commentList').children.length) {
-                document.getElementById('commentList').innerHTML =
-                    '<div class="no-comments">No comments yet — be the first to share.</div>';
-            }
+
+            // Remember open sections before reload
+            const openIds = [...document.querySelectorAll('.replies-section.open')]
+                .map(el => el.id.replace('replies-', ''));
+
+            await loadComments();
+
+            openIds.forEach(id => {
+                const section = document.getElementById(`replies-${id}`);
+                const arrow   = document.getElementById(`arrow-${id}`);
+                if (section) section.classList.add('open');
+                if (arrow)   arrow.classList.add('open');
+            });
         }
 
         // ── HELPERS ──
@@ -485,6 +676,22 @@
         function formatValue(val) {
             if (!val) return '—';
             return val.charAt(0).toUpperCase() + val.slice(1).replace(/_/g, ' ');
+        }
+
+        function formatDate(ts) {
+            return new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function escapeAttr(str) {
+            return String(str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
         // ── INIT ──

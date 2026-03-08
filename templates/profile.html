@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedExperience — Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f7f6f2;
+            --surface: #ffffff;
+            --ink: #1a1a18;
+            --ink-muted: #7a7a72;
+            --ink-faint: #b8b8b0;
+            --accent: #2a6b52;
+            --accent-hover: #205540;
+            --accent-light: #e8f2ee;
+            --border: #e4e3de;
+            --shadow-md: 0 4px 16px rgba(26,26,24,0.1), 0 12px 32px rgba(26,26,24,0.08);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: radial-gradient(circle, #c8c7c0 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: 60px;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 28px; gap: 16px;
+        }
+        .nav-logo { display: flex; align-items: baseline; gap: 1px; text-decoration: none; flex-shrink: 0; margin-right: 8px; }
+        .logo-med { font-family: 'Lora', serif; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.01em; }
+        .logo-ex  { font-family: 'Lora', serif; font-weight: 500; font-size: 20px; color: var(--accent); letter-spacing: -0.01em; }
+        .logo-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; margin-left: 2px; margin-bottom: 2px; flex-shrink: 0; }
+        .nav-search { flex: 1; max-width: 440px; position: relative; }
+        .nav-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
+        .nav-search input {
+            width: 100%; padding: 8px 14px 8px 36px;
+            background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--ink);
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+        }
+        .nav-search input::placeholder { color: var(--ink-faint); }
+        .nav-search input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(42,107,82,0.1); }
+        .nav-spacer { flex: 1; }
+        .btn-new-post {
+            display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+            background: var(--accent); border: none; border-radius: 8px; color: #fff;
+            font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+            cursor: pointer; flex-shrink: 0; text-decoration: none;
+            transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+            box-shadow: 0 2px 8px rgba(42,107,82,0.2);
+        }
+        .btn-new-post:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(42,107,82,0.28); }
+        .nav-profile { position: relative; flex-shrink: 0; }
+        .profile-avatar {
+            width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+            transition: box-shadow 0.18s, transform 0.12s;
+        }
+        .profile-avatar:hover { box-shadow: 0 0 0 3px rgba(42,107,82,0.18); transform: scale(1.05); }
+        .dropdown {
+            display: none; position: absolute; top: calc(100% + 10px); right: 0;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+            box-shadow: var(--shadow-md); min-width: 180px; overflow: hidden;
+            animation: dropIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .dropdown.open { display: block; }
+        @keyframes dropIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .dropdown-email { padding: 12px 16px 10px; font-size: 12px; color: var(--ink-faint); border-bottom: 1px solid var(--border); }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+            font-size: 14px; font-family: 'Nunito', sans-serif; color: var(--ink);
+            background: none; border: none; width: 100%; text-align: left;
+            cursor: pointer; transition: background 0.12s; text-decoration: none;
+        }
+        .dropdown-item:hover { background: var(--bg); }
+        .dropdown-item.danger { color: #c0392b; }
+        .dropdown-item.danger:hover { background: #fdf2f2; }
+        .dropdown-divider { height: 1px; background: var(--border); }
+
+        /* LAYOUT */
+        .layout {
+            position: relative; z-index: 1;
+            max-width: 860px; margin: 88px auto 60px; padding: 0 24px;
+        }
+
+        /* USER CARD */
+        .user-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 24px 28px; margin-bottom: 28px;
+            display: flex; align-items: center; gap: 20px;
+            box-shadow: 0 2px 8px rgba(26,26,24,0.05);
+        }
+        .user-avatar-lg {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--accent); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Lora', serif; font-size: 22px; font-weight: 600;
+            flex-shrink: 0;
+        }
+        .user-info {}
+        .user-email { font-size: 16px; font-weight: 600; color: var(--ink); }
+        .user-meta  { font-size: 13px; color: var(--ink-faint); margin-top: 3px; }
+
+        /* TABS */
+        .tabs {
+            display: flex; gap: 4px; margin-bottom: 20px;
+            border-bottom: 1px solid var(--border); padding-bottom: 0;
+        }
+        .tab-btn {
+            padding: 9px 18px; border: none; background: none;
+            font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 600;
+            color: var(--ink-muted); cursor: pointer;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+            transition: color 0.15s, border-color 0.15s;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .tab-btn:hover { color: var(--ink); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 18px; height: 18px; padding: 0 5px;
+            background: var(--accent); color: #fff;
+            border-radius: 99px; font-size: 11px; font-weight: 700;
+        }
+        .tab-badge.hidden { display: none; }
+
+        /* TAB PANELS */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* POST CARD (compact) */
+        .post-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 18px 22px; margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(26,26,24,0.04);
+            cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+        }
+        .post-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,26,24,0.09); }
+        .post-card-drug {
+            font-family: 'Lora', serif; font-size: 16px; font-weight: 600;
+            color: var(--ink); margin-bottom: 6px; letter-spacing: -0.01em;
+        }
+        .post-card-meta {
+            font-size: 12px; color: var(--ink-faint);
+            display: flex; gap: 14px; flex-wrap: wrap;
+        }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+        .badge-yes { background: #dcfce7; color: #166534; }
+        .badge-no  { background: #fee2e2; color: #991b1b; }
+        .post-card-arrow { font-size: 12px; font-weight: 600; color: var(--accent); margin-top: 10px; }
+
+        /* INBOX */
+        .inbox-item {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(26,26,24,0.04);
+            transition: box-shadow 0.15s;
+            cursor: pointer;
+        }
+        .inbox-item:hover { box-shadow: 0 4px 14px rgba(26,26,24,0.08); }
+        .inbox-item.unread { border-left: 3px solid var(--accent); }
+        .inbox-item-top {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 8px; gap: 12px;
+        }
+        .inbox-drug {
+            font-size: 13px; font-weight: 600; color: var(--accent);
+        }
+        .inbox-date { font-size: 11px; color: var(--ink-faint); flex-shrink: 0; }
+        .inbox-content {
+            font-size: 14px; font-weight: 300; color: var(--ink-muted); line-height: 1.6;
+        }
+        .inbox-commenter {
+            font-size: 11px; color: var(--ink-faint); margin-top: 6px;
+        }
+        .inbox-new-dot {
+            display: inline-block; width: 7px; height: 7px;
+            background: var(--accent); border-radius: 50%; margin-right: 6px; vertical-align: middle;
+        }
+        .mark-read-btn {
+            background: none; border: 1.5px solid var(--border);
+            border-radius: 8px; padding: 6px 14px;
+            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 600;
+            color: var(--ink-muted); cursor: pointer; transition: all 0.15s;
+            margin-bottom: 16px;
+        }
+        .mark-read-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .mark-read-btn.hidden { display: none; }
+
+        .empty-state {
+            text-align: center; color: var(--ink-faint);
+            font-size: 14px; padding: 48px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/home" class="nav-logo">
+            <span class="logo-med">Med</span>
+            <span class="logo-ex">Ex</span>
+            <div class="logo-dot"></div>
+        </a>
+        <div class="nav-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search experiences…" id="searchInput">
+        </div>
+        <div class="nav-spacer"></div>
+        <a href="/create-post" class="btn-new-post">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New post
+        </a>
+        <div class="nav-profile" id="profileMenu">
+            <button class="profile-avatar" id="profileBtn">U</button>
+            <div class="dropdown" id="dropdown">
+                <div class="dropdown-email" id="navEmail">—</div>
+                <a href="/profile" class="dropdown-item">My profile</a>
+                <div class="dropdown-divider"></div>
+                <a href="/" class="dropdown-item danger">Log out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- LAYOUT -->
+    <div class="layout">
+
+        <!-- USER CARD -->
+        <div class="user-card">
+            <div class="user-avatar-lg" id="avatarLg">U</div>
+            <div class="user-info">
+                <div class="user-email" id="userEmail">Loading…</div>
+                <div class="user-meta" id="userMeta">—</div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('posts')" id="tab-posts">
+                My Posts
+                <span class="tab-badge hidden" id="badge-posts"></span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('inbox')" id="tab-inbox">
+                Inbox
+                <span class="tab-badge hidden" id="badge-inbox"></span>
+            </button>
+        </div>
+
+        <!-- POSTS PANEL -->
+        <div class="tab-panel active" id="panel-posts">
+            <div id="postList"><p class="empty-state">Loading…</p></div>
+        </div>
+
+        <!-- INBOX PANEL -->
+        <div class="tab-panel" id="panel-inbox">
+            <button class="mark-read-btn hidden" id="markReadBtn" onclick="markAllRead()">
+                Mark all as read
+            </button>
+            <div id="inboxList"><p class="empty-state">Loading…</p></div>
+        </div>
+
+    </div>
+
+    <script>
+        // ── NAVBAR ──
+        const profileBtn  = document.getElementById("profileBtn");
+        const dropdown    = document.getElementById("dropdown");
+        const profileMenu = document.getElementById("profileMenu");
+        profileBtn.addEventListener("click", () => dropdown.classList.toggle("open"));
+        document.addEventListener("mousedown", (e) => {
+            if (!profileMenu.contains(e.target)) dropdown.classList.remove("open");
+        });
+        document.getElementById('searchInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && this.value.trim())
+                window.location.href = '/feed?medicine=' + encodeURIComponent(this.value.trim());
+        });
+
+        // ── TABS ──
+        function switchTab(name) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            document.getElementById('panel-' + name).classList.add('active');
+
+            // mark inbox as read when user opens it
+            if (name === 'inbox') {
+                const badge = document.getElementById('badge-inbox');
+                if (!badge.classList.contains('hidden')) {
+                    markAllRead();
+                }
+            }
+        }
+
+        // ── LOAD ME ──
+        async function loadMe() {
+            const res  = await fetch('/api/me', { credentials: 'include' });
+            const data = await res.json();
+            if (!data.user_id) {
+                window.location.href = '/login';
+                return null;
+            }
+
+            const initial = data.email[0].toUpperCase();
+            document.getElementById('navEmail').textContent    = data.email;
+            document.getElementById('profileBtn').textContent  = initial;
+            document.getElementById('avatarLg').textContent    = initial;
+            document.getElementById('userEmail').textContent   = data.email;
+
+            return data;
+        }
+
+        // ── LOAD POSTS ──
+        async function loadPosts() {
+            const res   = await fetch('/api/me/posts', { credentials: 'include' });
+            const posts = await res.json();
+
+            const list = document.getElementById('postList');
+
+            if (!Array.isArray(posts) || posts.length === 0) {
+                list.innerHTML = '<p class="empty-state">You haven\'t posted anything yet.</p>';
+                return;
+            }
+
+            // Show count
+            const badge = document.getElementById('badge-posts');
+            badge.textContent = posts.length;
+            badge.classList.remove('hidden');
+
+            // Update user meta
+            document.getElementById('userMeta').textContent =
+                `${posts.length} post${posts.length > 1 ? 's' : ''}`;
+
+            list.innerHTML = '';
+            posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.addEventListener('click', () => {
+                    window.location.href = '/post?id=' + post.id;
+                });
+
+                const hasUnlisted = post.unlisted_side_effects === 'yes';
+                const date = new Date(post.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'short', day: 'numeric'
+                });
+
+                card.innerHTML = `
+                    <div class="post-card-drug">${post.drug_name}</div>
+                    <div class="post-card-meta">
+                        <span>${date}</span>
+                        <span>${post.gender ? post.gender.charAt(0).toUpperCase() + post.gender.slice(1) : '—'}</span>
+                        <span>${post.duration_value ?? '—'} ${post.duration_unit ?? ''}</span>
+                        <span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">
+                            Unlisted side effects: ${hasUnlisted ? 'Yes' : 'No'}
+                        </span>
+                    </div>
+                    <div class="post-card-arrow">Read more →</div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // ── LOAD INBOX ──
+        async function loadInbox() {
+            const res  = await fetch('/api/me/inbox', { credentials: 'include' });
+            const data = await res.json();
+
+            if (data.error) return;
+
+            const { items, unread_count } = data;
+            const badge    = document.getElementById('badge-inbox');
+            const markBtn  = document.getElementById('markReadBtn');
+            const list     = document.getElementById('inboxList');
+
+            if (unread_count > 0) {
+                badge.textContent = unread_count;
+                badge.classList.remove('hidden');
+                markBtn.classList.remove('hidden');
+            }
+
+            if (!items || items.length === 0) {
+                list.innerHTML = '<p class="empty-state">No messages yet.</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'inbox-item' + (item.is_new ? ' unread' : '');
+                card.addEventListener('click', () => {
+                    window.location.href = '/post?id=' + item.post_id;
+                });
+
+                const date = new Date(item.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'short', day: 'numeric'
+                });
+
+                card.innerHTML = `
+                    <div class="inbox-item-top">
+                        <div class="inbox-drug">
+                            ${item.is_new ? '<span class="inbox-new-dot"></span>' : ''}
+                            ${item.drug_name}
+                        </div>
+                        <div class="inbox-date">${date}</div>
+                    </div>
+                    <div class="inbox-content">${item.comment_content}</div>
+                    <div class="inbox-commenter">From ${item.commenter_email}</div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // ── MARK READ ──
+        async function markAllRead() {
+            await fetch('/api/me/inbox/read', { method: 'POST', credentials: 'include' });
+
+            // Clear badge and button
+            const badge   = document.getElementById('badge-inbox');
+            const markBtn = document.getElementById('markReadBtn');
+            badge.classList.add('hidden');
+            markBtn.classList.add('hidden');
+
+            // Remove unread styling from all items
+            document.querySelectorAll('.inbox-item.unread').forEach(el => {
+                el.classList.remove('unread');
+                const dot = el.querySelector('.inbox-new-dot');
+                if (dot) dot.remove();
+            });
+        }
+
+        // ── INIT ──
+        async function init() {
+            const user = await loadMe();
+            if (!user) return;
+            loadPosts();
+            loadInbox();
+        }
+
+        init();
+    </script>
+
+</body>
+</html>

@@ -1,4 +1,5 @@
 node_modules
 .env
-dist/curl -fsSL https://claude.ai/install.sh | bash
-curl -fsSL https://claude.ai/install.sh | bash
+dist/
+users.db
+__pycache__/

@@ -219,8 +219,8 @@
         <div class="nav-profile" id="profileMenu">
             <button class="profile-avatar" id="profileBtn">U</button>
             <div class="dropdown" id="dropdown">
-                <div class="dropdown-email">user@example.com</div>
-                <a href="#" class="dropdown-item">My profile</a>
+                <div class="dropdown-email" id="navEmail">—</div>
+                <a href="/profile" class="dropdown-item">My profile</a>
                 <div class="dropdown-divider"></div>
                 <a href="/" class="dropdown-item danger">Log out</a>
             </div>
@@ -292,6 +292,14 @@
             if (!profileMenu.contains(e.target)) dropdown.classList.remove("open");
         });
 
+        // Load user email
+        fetch('/api/me', { credentials: 'include' }).then(r => r.json()).then(d => {
+            if (d.email) {
+                document.getElementById('navEmail').textContent = d.email;
+                document.getElementById('profileBtn').textContent = d.email[0].toUpperCase();
+            }
+        });
+
         // ── SETUP ──
         const params   = new URLSearchParams(window.location.search);
         const medicine = params.get('medicine') || '';
@@ -305,7 +313,6 @@
         });
 
         // ── FILTER STATE ──
-        // Only one value active per filter group at a time
         const activeFilters = {
             gender: null,
             expected_effect: null,
@@ -313,18 +320,15 @@
             duration: null
         };
 
-        // chip click logic
         document.querySelectorAll('.chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const filterKey = chip.dataset.filter;
                 const value     = chip.dataset.value;
 
                 if (activeFilters[filterKey] === value) {
-                    // clicking active chip toggles it off
                     activeFilters[filterKey] = null;
                     chip.classList.remove('active');
                 } else {
-                    // deactivate previous chip in same group
                     document.querySelectorAll(`.chip[data-filter="${filterKey}"]`)
                         .forEach(c => c.classList.remove('active'));
                     activeFilters[filterKey] = value;
@@ -378,10 +382,10 @@
             const card = document.createElement('div');
             card.className = 'post-card';
             card.addEventListener('click', () => {
-                window.location.href = '/post?id=' + post._id;
+                window.location.href = '/post?id=' + post.id;
             });
 
-            const hasUnlisted = post.differentFromPackage === true;
+            const hasUnlisted = post.unlisted_side_effects === 'yes';
             const bullets = summarize(post);
 
             card.innerHTML = `
@@ -399,21 +403,18 @@
 
         function summarize(post) {
             const bullets = [];
-            const gender = post.userInfo?.gender || '';
-            const dosage = post.dosage || {};
-            const info   = post.additionalInfo || {};
-            bullets.push(`Biological sex: ${formatValue(gender)}`);
-            bullets.push(`Dosage: ${dosage.amount ?? '—'} ${dosage.unit ?? ''}, ${dosage.times ?? '—'} time(s) per ${dosage.frequency ?? '—'}`);
-            bullets.push(`Duration: ${post.duration ?? '—'}`);
-            bullets.push(`Achieved intended treatment effect: ${post.expectedEffect ? 'yes' : 'no'}`);
-            if (gender === 'female') {
-                if (post.userInfo?.menstrualPhase) bullets.push('Was on menstrual period during medication');
-                if (info.pregnant)                 bullets.push('Was pregnant during medication');
+            bullets.push(`Biological sex: ${formatValue(post.gender)}`);
+            bullets.push(`Dosage: ${post.dosage_amount ?? '—'} ${post.dosage_unit ?? ''}, ${post.freq_count ?? '—'} time(s) per ${post.freq_per ?? '—'}`);
+            bullets.push(`Duration: ${post.duration_value ?? '—'} ${post.duration_unit ?? ''}`);
+            bullets.push(`Achieved intended treatment effect: ${post.expected_effect ?? '—'}`);
+            if (post.gender === 'female') {
+                if (post.having_period) bullets.push('Was on menstrual period during medication');
+                if (post.was_pregnant)  bullets.push('Was pregnant during medication');
             }
-            if (post.reactionDescription) {
-                post.reactionDescription.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
+            if (post.description) {
+                post.description.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
             }
-            if (info.notes) bullets.push(`Notes: ${info.notes}`);
+            if (post.additional_notes) bullets.push(`Notes: ${post.additional_notes}`);
             return bullets;
         }
 
