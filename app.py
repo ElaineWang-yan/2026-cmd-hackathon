@@ -161,7 +161,7 @@ def register():
     if not email or not password:
         return jsonify({"message": "Email and password are required."}), 400
 
-    hashed = generate_password_hash(password)
+    hashed = generate_password_hash(password, method='pbkdf2:sha256')
     try:
         with sqlite3.connect(DB_PATH) as conn:
             conn.execute(
@@ -495,6 +495,7 @@ def mark_inbox_read():
 
 # ── RUN ───────────────────────────────────────────────────
 
+init_db()
+
 if __name__ == "__main__":
-    init_db()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    app.run(host='0.0.0.0', debug=True, port=int(os.environ.get('PORT', 8080)))
