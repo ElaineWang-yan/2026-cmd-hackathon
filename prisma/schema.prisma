@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  email     String     @unique
+  password  String
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Post {
+  id                    String     @id @default(auto()) @map("_id") @db.ObjectId
+  drugName              String
+  dosage                String
+  administrationTime    String
+  frequency             String
+  differentFromPackage  Boolean    @default(false)
+  reactionDescription   String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  
+  userId                String?    @db.ObjectId
+  user                  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments              Comment[]
+  likes                 Like[]
+  
+  @@index([drugName])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  createdAt DateTime   @default(now())
+  
+  postId    String     @db.ObjectId
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String?    @db.ObjectId
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([postId])
+  @@index([userId])
+}
+
+model Like {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime   @default(now())
+  
+  postId    String     @db.ObjectId
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String?    @db.ObjectId
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}

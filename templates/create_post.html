@@ -556,10 +556,9 @@
     return show;
   }
 
-  // Form submit
-  document.getElementById('createPostForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    let hasError = false;
+        document.getElementById('createPostForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            let hasError = false;
 
     if (setError('drugName', !document.getElementById('drugName').value.trim())) hasError = true;
     if (setError('gender', !document.getElementById('gender').value)) hasError = true;
@@ -605,10 +604,19 @@
       additionalNotes: document.getElementById('additionalNotes').value.trim(),
     };
 
-    console.log('Form submitted:', formData);
-    alert('Post submitted!');
-  });
-</script>
+            const res = await fetch('/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                window.location.href = '/feed?medicine=' + encodeURIComponent(formData.drugName);
+            } else {
+                alert('Error: ' + result.message);
+            }
+        });
+    </script>
 
 </body>
 </html>
