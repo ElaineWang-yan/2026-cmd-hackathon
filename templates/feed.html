@@ -21,37 +21,19 @@
             --shadow-md: 0 4px 16px rgba(26,26,24,0.1), 0 12px 32px rgba(26,26,24,0.08);
         }
 
-        body {
-            font-family: 'Nunito', sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            min-height: 100vh;
-        }
+        body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
 
         body::before {
-            content: '';
-            position: fixed; inset: 0;
+            content: ''; position: fixed; inset: 0;
             background-image: radial-gradient(circle, #c8c7c0 1px, transparent 1px);
-            background-size: 28px 28px;
-            opacity: 0.45;
-            pointer-events: none;
-            z-index: 0;
+            background-size: 28px 28px; opacity: 0.45; pointer-events: none; z-index: 0;
         }
 
         /* NAVBAR */
         .navbar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-            height: 60px;
-            background: rgba(255,255,255,0.88);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 28px;
-            gap: 16px;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 60px;
+            background: rgba(255,255,255,0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 16px;
         }
         .nav-logo { display: flex; align-items: baseline; gap: 1px; text-decoration: none; flex-shrink: 0; margin-right: 8px; }
         .logo-med { font-family: 'Lora', serif; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.01em; }
@@ -60,9 +42,8 @@
         .nav-search { flex: 1; max-width: 440px; position: relative; }
         .nav-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
         .nav-search input {
-            width: 100%; padding: 8px 14px 8px 36px;
-            background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px;
-            font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--ink);
+            width: 100%; padding: 8px 14px 8px 36px; background: var(--bg); border: 1.5px solid var(--border);
+            border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--ink);
             transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
         }
         .nav-search input::placeholder { color: var(--ink-faint); }
@@ -116,23 +97,17 @@
         .sidebar {
             width: 210px; flex-shrink: 0;
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 20px;
-            height: fit-content;
+            border-radius: 12px; padding: 20px; height: fit-content;
             box-shadow: 0 2px 8px rgba(26,26,24,0.05);
             position: sticky; top: 80px;
         }
-
         .filter-section { margin-bottom: 20px; }
         .filter-section:last-child { margin-bottom: 0; }
-
         .filter-label {
             font-size: 10px; font-weight: 700; color: var(--ink-faint);
-            text-transform: uppercase; letter-spacing: 0.08em;
-            margin-bottom: 8px; display: block;
+            text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: block;
         }
-
         .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-
         .chip {
             padding: 4px 10px; border-radius: 99px;
             font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 600;
@@ -141,21 +116,18 @@
         }
         .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
         .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
         .btn-clear-filters {
             width: 100%; margin-top: 16px; padding: 7px;
             background: none; border: 1.5px solid var(--border);
             border-radius: 8px; font-family: 'Nunito', sans-serif;
             font-size: 12px; font-weight: 600; color: var(--ink-muted);
-            cursor: pointer; transition: all 0.15s;
-            display: none;
+            cursor: pointer; transition: all 0.15s; display: none;
         }
         .btn-clear-filters:hover { border-color: var(--accent); color: var(--accent); }
         .btn-clear-filters.visible { display: block; }
 
         /* MAIN */
         .main { flex: 1; }
-
         .medicine-heading {
             font-family: 'Lora', serif; font-size: 24px; font-weight: 600;
             color: var(--ink); margin-bottom: 20px; letter-spacing: -0.02em;
@@ -164,11 +136,7 @@
             font-family: 'Nunito', sans-serif; font-size: 14px;
             font-weight: 300; color: var(--ink-muted); margin-left: 10px;
         }
-
-        .results-count {
-            font-size: 13px; color: var(--ink-faint);
-            margin-bottom: 16px; margin-top: -10px;
-        }
+        .results-count { font-size: 13px; color: var(--ink-faint); margin-bottom: 16px; margin-top: -10px; }
 
         /* POST CARD */
         .post-card {
@@ -183,24 +151,41 @@
         .badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; }
         .badge-yes { background: #dcfce7; color: #166534; }
         .badge-no  { background: #fee2e2; color: #991b1b; }
-        .post-card ul { padding-left: 18px; list-style: disc; }
-        .post-card ul li { font-size: 14px; font-weight: 300; line-height: 1.85; color: var(--ink-muted); }
-        .preview-fade { position: relative; max-height: 110px; overflow: hidden; }
-        .preview-fade::after {
-            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-            height: 48px; background: linear-gradient(transparent, white);
+
+        /* Field rows in card */
+        .card-fields { display: flex; flex-direction: column; }
+        .card-field-row {
+            display: flex; align-items: baseline; gap: 8px;
+            padding: 6px 0; border-bottom: 1px solid var(--border);
+            font-size: 13.5px; line-height: 1.55;
         }
-        .post-card-footer { margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--accent); }
+        .card-field-row:last-child { border-bottom: none; }
+        .card-field-label { font-weight: 600; color: var(--ink); white-space: nowrap; flex-shrink: 0; min-width: 180px; }
+        .card-field-value { font-weight: 300; color: var(--ink-muted); }
+
+        /* Description preview in card */
+        .card-description-preview {
+            margin-top: 10px; padding: 10px 12px;
+            background: var(--bg); border-radius: 7px;
+            border: 1px solid var(--border);
+            font-size: 13px; font-weight: 300; color: var(--ink-muted);
+            line-height: 1.65;
+            max-height: 60px; overflow: hidden; position: relative;
+        }
+        .card-description-preview::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 28px; background: linear-gradient(transparent, var(--bg));
+        }
+
+        .post-card-footer { margin-top: 12px; font-size: 12px; font-weight: 600; color: var(--accent); }
         .empty-state { color: var(--ink-faint); font-size: 15px; margin-top: 60px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
     <nav class="navbar">
         <a href="/home" class="nav-logo">
-            <span class="logo-med">Med</span>
-            <span class="logo-ex">Ex</span>
+            <span class="logo-med">Med</span><span class="logo-ex">Ex</span>
             <div class="logo-dot"></div>
         </a>
         <div class="nav-search">
@@ -227,12 +212,8 @@
         </div>
     </nav>
 
-    <!-- LAYOUT -->
     <div class="layout">
-
-        <!-- SIDEBAR -->
         <aside class="sidebar">
-
             <div class="filter-section">
                 <span class="filter-label">Biological Sex</span>
                 <div class="filter-chips">
@@ -241,7 +222,6 @@
                     <div class="chip" data-filter="gender" data-value="other">Other</div>
                 </div>
             </div>
-
             <div class="filter-section">
                 <span class="filter-label">Intended Effect</span>
                 <div class="filter-chips">
@@ -249,7 +229,6 @@
                     <div class="chip" data-filter="expected_effect" data-value="no">Not achieved</div>
                 </div>
             </div>
-
             <div class="filter-section">
                 <span class="filter-label">Unlisted Side Effects</span>
                 <div class="filter-chips">
@@ -257,7 +236,6 @@
                     <div class="chip" data-filter="unlisted_side_effects" data-value="no">No</div>
                 </div>
             </div>
-
             <div class="filter-section">
                 <span class="filter-label">Duration</span>
                 <div class="filter-chips">
@@ -266,24 +244,17 @@
                     <div class="chip" data-filter="duration" data-value="long">Over 1 month</div>
                 </div>
             </div>
-
             <button class="btn-clear-filters" id="btnClear" onclick="clearFilters()">Clear all filters</button>
-
         </aside>
 
-        <!-- MAIN -->
         <main class="main">
-            <div class="medicine-heading" id="medicineHeading">
-                Loading...<span>— shared experiences</span>
-            </div>
+            <div class="medicine-heading" id="medicineHeading">Loading...<span>— shared experiences</span></div>
             <div class="results-count" id="resultsCount"></div>
             <div id="postList"></div>
         </main>
-
     </div>
 
     <script>
-        // ── NAVBAR ──
         const profileBtn  = document.getElementById("profileBtn");
         const dropdown    = document.getElementById("dropdown");
         const profileMenu = document.getElementById("profileMenu");
@@ -292,49 +263,37 @@
             if (!profileMenu.contains(e.target)) dropdown.classList.remove("open");
         });
 
-        // Load user email
         fetch('/api/me', { credentials: 'include' }).then(r => r.json()).then(d => {
             if (d.email) {
-                document.getElementById('navEmail').textContent = d.email;
+                document.getElementById('navEmail').textContent   = d.email;
                 document.getElementById('profileBtn').textContent = d.email[0].toUpperCase();
             }
         });
 
-        // ── SETUP ──
         const params   = new URLSearchParams(window.location.search);
         const medicine = params.get('medicine') || '';
 
-        document.getElementById('medicineHeading').innerHTML =
-            `${medicine}<span>— shared experiences</span>`;
+        document.getElementById('medicineHeading').innerHTML = `${medicine}<span>— shared experiences</span>`;
 
         document.getElementById('searchInput').addEventListener('keydown', function (e) {
             if (e.key === 'Enter' && this.value.trim())
                 window.location.href = '/feed?medicine=' + encodeURIComponent(this.value.trim());
         });
 
-        // ── FILTER STATE ──
-        const activeFilters = {
-            gender: null,
-            expected_effect: null,
-            unlisted_side_effects: null,
-            duration: null
-        };
+        const activeFilters = { gender: null, expected_effect: null, unlisted_side_effects: null, duration: null };
 
         document.querySelectorAll('.chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const filterKey = chip.dataset.filter;
                 const value     = chip.dataset.value;
-
                 if (activeFilters[filterKey] === value) {
                     activeFilters[filterKey] = null;
                     chip.classList.remove('active');
                 } else {
-                    document.querySelectorAll(`.chip[data-filter="${filterKey}"]`)
-                        .forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll(`.chip[data-filter="${filterKey}"]`).forEach(c => c.classList.remove('active'));
                     activeFilters[filterKey] = value;
                     chip.classList.add('active');
                 }
-
                 updateClearBtn();
                 loadPosts();
             });
@@ -352,10 +311,8 @@
             loadPosts();
         }
 
-        // ── LOAD POSTS ──
         async function loadPosts() {
             const query = new URLSearchParams({ medicine });
-
             if (activeFilters.gender)                query.set('gender', activeFilters.gender);
             if (activeFilters.expected_effect)       query.set('expected_effect', activeFilters.expected_effect);
             if (activeFilters.unlisted_side_effects) query.set('unlisted_side_effects', activeFilters.unlisted_side_effects);
@@ -363,8 +320,7 @@
 
             const res   = await fetch('/api/posts?' + query.toString());
             const posts = await res.json();
-
-            const list = document.getElementById('postList');
+            const list  = document.getElementById('postList');
             list.innerHTML = '';
 
             const countEl = document.getElementById('resultsCount');
@@ -377,45 +333,40 @@
             posts.forEach(renderPost);
         }
 
-        // ── RENDER ──
         function renderPost(post) {
             const card = document.createElement('div');
             card.className = 'post-card';
-            card.addEventListener('click', () => {
-                window.location.href = '/post?id=' + post.id;
-            });
+            card.addEventListener('click', () => { window.location.href = '/post?id=' + post.id; });
 
             const hasUnlisted = post.unlisted_side_effects === 'yes';
-            const bullets = summarize(post);
+            const fields = buildPreviewFields(post);
 
             card.innerHTML = `
                 <div class="post-card-header">
                     <div class="post-card-label-row">Unlisted side effects on medication label or patient information leaflet</div>
-                    <div><span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">${hasUnlisted ? 'Yes' : 'No'}</span></div>
+                    <span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">${hasUnlisted ? 'Yes' : 'No'}</span>
                 </div>
-                <div class="preview-fade">
-                    <ul>${bullets.slice(0, 4).map(b => `<li>${b}</li>`).join('')}</ul>
-                </div>
+                <div class="card-fields">${fields.rows}</div>
+                ${fields.description ? `<div class="card-description-preview">${escapeHtml(fields.description)}</div>` : ''}
                 <div class="post-card-footer">Read more →</div>
             `;
             document.getElementById('postList').appendChild(card);
         }
 
-        function summarize(post) {
-            const bullets = [];
-            bullets.push(`Biological sex: ${formatValue(post.gender)}`);
-            bullets.push(`Dosage: ${post.dosage_amount ?? '—'} ${post.dosage_unit ?? ''}, ${post.freq_count ?? '—'} time(s) per ${post.freq_per ?? '—'}`);
-            bullets.push(`Duration: ${post.duration_value ?? '—'} ${post.duration_unit ?? ''}`);
-            bullets.push(`Achieved intended treatment effect: ${post.expected_effect ?? '—'}`);
-            if (post.gender === 'female') {
-                if (post.having_period) bullets.push('Was on menstrual period during medication');
-                if (post.was_pregnant)  bullets.push('Was pregnant during medication');
-            }
-            if (post.description) {
-                post.description.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
-            }
-            if (post.additional_notes) bullets.push(`Notes: ${post.additional_notes}`);
-            return bullets;
+        function buildPreviewFields(post) {
+            const rows = [];
+            rows.push(cardRow('Biological sex', formatValue(post.gender)));
+            rows.push(cardRow('Dosage', `${post.dosage_amount ?? '—'} ${post.dosage_unit ?? ''}, ${post.freq_count ?? '—'} time(s) per ${post.freq_per ?? '—'}`));
+            rows.push(cardRow('Duration', `${post.duration_value ?? '—'} ${post.duration_unit ?? ''}`));
+            rows.push(cardRow('Achieved intended effect', formatValue(post.expected_effect)));
+            return { rows: rows.join(''), description: post.description || null };
+        }
+
+        function cardRow(label, value) {
+            return `<div class="card-field-row">
+                <span class="card-field-label">${label}</span>
+                <span class="card-field-value">${escapeHtml(String(value ?? '—'))}</span>
+            </div>`;
         }
 
         function formatValue(val) {
@@ -423,8 +374,13 @@
             return val.charAt(0).toUpperCase() + val.slice(1).replace(/_/g, ' ');
         }
 
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
         loadPosts();
     </script>
-
 </body>
 </html>
