@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedExperience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f7f6f2;
+            --surface: #ffffff;
+            --ink: #1a1a18;
+            --ink-muted: #7a7a72;
+            --ink-faint: #b8b8b0;
+            --accent: #2a6b52;
+            --accent-hover: #205540;
+            --accent-light: #e8f2ee;
+            --border: #e4e3de;
+            --shadow-md: 0 4px 16px rgba(26,26,24,0.1), 0 12px 32px rgba(26,26,24,0.08);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: radial-gradient(circle, #c8c7c0 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            height: 60px;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            gap: 16px;
+        }
+        .nav-logo { display: flex; align-items: baseline; gap: 1px; text-decoration: none; flex-shrink: 0; margin-right: 8px; }
+        .logo-med { font-family: 'Lora', serif; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.01em; }
+        .logo-ex  { font-family: 'Lora', serif; font-weight: 500; font-size: 20px; color: var(--accent); letter-spacing: -0.01em; }
+        .logo-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; margin-left: 2px; margin-bottom: 2px; flex-shrink: 0; }
+        .nav-search { flex: 1; max-width: 440px; position: relative; }
+        .nav-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
+        .nav-search input {
+            width: 100%; padding: 8px 14px 8px 36px;
+            background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--ink);
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+        }
+        .nav-search input::placeholder { color: var(--ink-faint); }
+        .nav-search input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(42,107,82,0.1); }
+        .nav-spacer { flex: 1; }
+        .btn-new-post {
+            display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+            background: var(--accent); border: none; border-radius: 8px; color: #fff;
+            font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+            cursor: pointer; flex-shrink: 0; text-decoration: none;
+            transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+            box-shadow: 0 2px 8px rgba(42,107,82,0.2);
+        }
+        .btn-new-post:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(42,107,82,0.28); }
+        .nav-profile { position: relative; flex-shrink: 0; }
+        .profile-avatar {
+            width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+            transition: box-shadow 0.18s, transform 0.12s;
+        }
+        .profile-avatar:hover { box-shadow: 0 0 0 3px rgba(42,107,82,0.18); transform: scale(1.05); }
+        .dropdown {
+            display: none; position: absolute; top: calc(100% + 10px); right: 0;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+            box-shadow: var(--shadow-md); min-width: 180px; overflow: hidden;
+            animation: dropIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .dropdown.open { display: block; }
+        @keyframes dropIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .dropdown-email { padding: 12px 16px 10px; font-size: 12px; color: var(--ink-faint); border-bottom: 1px solid var(--border); }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+            font-size: 14px; font-family: 'Nunito', sans-serif; color: var(--ink);
+            background: none; border: none; width: 100%; text-align: left;
+            cursor: pointer; transition: background 0.12s; text-decoration: none;
+        }
+        .dropdown-item:hover { background: var(--bg); }
+        .dropdown-item.danger { color: #c0392b; }
+        .dropdown-item.danger:hover { background: #fdf2f2; }
+        .dropdown-divider { height: 1px; background: var(--border); }
+
+        /* LAYOUT */
+        .layout {
+            position: relative; z-index: 1;
+            display: flex; max-width: 1100px;
+            margin: 88px auto 40px; gap: 24px; padding: 0 24px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 210px; flex-shrink: 0;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px;
+            height: fit-content;
+            box-shadow: 0 2px 8px rgba(26,26,24,0.05);
+            position: sticky; top: 80px;
+        }
+
+        .filter-section { margin-bottom: 20px; }
+        .filter-section:last-child { margin-bottom: 0; }
+
+        .filter-label {
+            font-size: 10px; font-weight: 700; color: var(--ink-faint);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            margin-bottom: 8px; display: block;
+        }
+
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .chip {
+            padding: 4px 10px; border-radius: 99px;
+            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 600;
+            border: 1.5px solid var(--border); background: var(--bg); color: var(--ink-muted);
+            cursor: pointer; transition: all 0.15s; white-space: nowrap;
+        }
+        .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+        .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .btn-clear-filters {
+            width: 100%; margin-top: 16px; padding: 7px;
+            background: none; border: 1.5px solid var(--border);
+            border-radius: 8px; font-family: 'Nunito', sans-serif;
+            font-size: 12px; font-weight: 600; color: var(--ink-muted);
+            cursor: pointer; transition: all 0.15s;
+            display: none;
+        }
+        .btn-clear-filters:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-clear-filters.visible { display: block; }
+
+        /* MAIN */
+        .main { flex: 1; }
+
+        .medicine-heading {
+            font-family: 'Lora', serif; font-size: 24px; font-weight: 600;
+            color: var(--ink); margin-bottom: 20px; letter-spacing: -0.02em;
+        }
+        .medicine-heading span {
+            font-family: 'Nunito', sans-serif; font-size: 14px;
+            font-weight: 300; color: var(--ink-muted); margin-left: 10px;
+        }
+
+        .results-count {
+            font-size: 13px; color: var(--ink-faint);
+            margin-bottom: 16px; margin-top: -10px;
+        }
+
+        /* POST CARD */
+        .post-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px 24px; margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(26,26,24,0.05);
+            transition: transform 0.18s, box-shadow 0.18s; cursor: pointer;
+        }
+        .post-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,26,24,0.09); }
+        .post-card-header { margin-bottom: 14px; }
+        .post-card-label-row { font-size: 11px; color: var(--ink-faint); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+        .badge-yes { background: #dcfce7; color: #166534; }
+        .badge-no  { background: #fee2e2; color: #991b1b; }
+        .post-card ul { padding-left: 18px; list-style: disc; }
+        .post-card ul li { font-size: 14px; font-weight: 300; line-height: 1.85; color: var(--ink-muted); }
+        .preview-fade { position: relative; max-height: 110px; overflow: hidden; }
+        .preview-fade::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 48px; background: linear-gradient(transparent, white);
+        }
+        .post-card-footer { margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--accent); }
+        .empty-state { color: var(--ink-faint); font-size: 15px; margin-top: 60px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/home" class="nav-logo">
+            <span class="logo-med">Med</span>
+            <span class="logo-ex">Ex</span>
+            <div class="logo-dot"></div>
+        </a>
+        <div class="nav-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search experiences…" id="searchInput">
+        </div>
+        <div class="nav-spacer"></div>
+        <a href="/create-post" class="btn-new-post">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New post
+        </a>
+        <div class="nav-profile" id="profileMenu">
+            <button class="profile-avatar" id="profileBtn">U</button>
+            <div class="dropdown" id="dropdown">
+                <div class="dropdown-email">user@example.com</div>
+                <a href="#" class="dropdown-item">My profile</a>
+                <div class="dropdown-divider"></div>
+                <a href="/" class="dropdown-item danger">Log out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- LAYOUT -->
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="filter-section">
+                <span class="filter-label">Biological Sex</span>
+                <div class="filter-chips">
+                    <div class="chip" data-filter="gender" data-value="male">Male</div>
+                    <div class="chip" data-filter="gender" data-value="female">Female</div>
+                    <div class="chip" data-filter="gender" data-value="other">Other</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <span class="filter-label">Intended Effect</span>
+                <div class="filter-chips">
+                    <div class="chip" data-filter="expected_effect" data-value="yes">Achieved</div>
+                    <div class="chip" data-filter="expected_effect" data-value="no">Not achieved</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <span class="filter-label">Unlisted Side Effects</span>
+                <div class="filter-chips">
+                    <div class="chip" data-filter="unlisted_side_effects" data-value="yes">Yes</div>
+                    <div class="chip" data-filter="unlisted_side_effects" data-value="no">No</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <span class="filter-label">Duration</span>
+                <div class="filter-chips">
+                    <div class="chip" data-filter="duration" data-value="short">Under 1 week</div>
+                    <div class="chip" data-filter="duration" data-value="medium">1–4 weeks</div>
+                    <div class="chip" data-filter="duration" data-value="long">Over 1 month</div>
+                </div>
+            </div>
+
+            <button class="btn-clear-filters" id="btnClear" onclick="clearFilters()">Clear all filters</button>
+
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <div class="medicine-heading" id="medicineHeading">
+                Loading...<span>— shared experiences</span>
+            </div>
+            <div class="results-count" id="resultsCount"></div>
+            <div id="postList"></div>
+        </main>
+
+    </div>
+
+    <script>
+        // ── NAVBAR ──
+        const profileBtn  = document.getElementById("profileBtn");
+        const dropdown    = document.getElementById("dropdown");
+        const profileMenu = document.getElementById("profileMenu");
+        profileBtn.addEventListener("click", () => dropdown.classList.toggle("open"));
+        document.addEventListener("mousedown", (e) => {
+            if (!profileMenu.contains(e.target)) dropdown.classList.remove("open");
+        });
+
+        // ── SETUP ──
+        const params   = new URLSearchParams(window.location.search);
+        const medicine = params.get('medicine') || '';
+
+        document.getElementById('medicineHeading').innerHTML =
+            `${medicine}<span>— shared experiences</span>`;
+
+        document.getElementById('searchInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && this.value.trim())
+                window.location.href = '/feed?medicine=' + encodeURIComponent(this.value.trim());
+        });
+
+        // ── FILTER STATE ──
+        // Only one value active per filter group at a time
+        const activeFilters = {
+            gender: null,
+            expected_effect: null,
+            unlisted_side_effects: null,
+            duration: null
+        };
+
+        // chip click logic
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const filterKey = chip.dataset.filter;
+                const value     = chip.dataset.value;
+
+                if (activeFilters[filterKey] === value) {
+                    // clicking active chip toggles it off
+                    activeFilters[filterKey] = null;
+                    chip.classList.remove('active');
+                } else {
+                    // deactivate previous chip in same group
+                    document.querySelectorAll(`.chip[data-filter="${filterKey}"]`)
+                        .forEach(c => c.classList.remove('active'));
+                    activeFilters[filterKey] = value;
+                    chip.classList.add('active');
+                }
+
+                updateClearBtn();
+                loadPosts();
+            });
+        });
+
+        function updateClearBtn() {
+            const hasAny = Object.values(activeFilters).some(v => v !== null);
+            document.getElementById('btnClear').classList.toggle('visible', hasAny);
+        }
+
+        function clearFilters() {
+            Object.keys(activeFilters).forEach(k => activeFilters[k] = null);
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            updateClearBtn();
+            loadPosts();
+        }
+
+        // ── LOAD POSTS ──
+        async function loadPosts() {
+            const query = new URLSearchParams({ medicine });
+
+            if (activeFilters.gender)                query.set('gender', activeFilters.gender);
+            if (activeFilters.expected_effect)       query.set('expected_effect', activeFilters.expected_effect);
+            if (activeFilters.unlisted_side_effects) query.set('unlisted_side_effects', activeFilters.unlisted_side_effects);
+            if (activeFilters.duration)              query.set('duration', activeFilters.duration);
+
+            const res   = await fetch('/api/posts?' + query.toString());
+            const posts = await res.json();
+
+            const list = document.getElementById('postList');
+            list.innerHTML = '';
+
+            const countEl = document.getElementById('resultsCount');
+            countEl.textContent = posts.length > 0 ? `${posts.length} result${posts.length > 1 ? 's' : ''}` : '';
+
+            if (posts.length === 0) {
+                list.innerHTML = '<p class="empty-state">No posts match the selected filters.</p>';
+                return;
+            }
+            posts.forEach(renderPost);
+        }
+
+        // ── RENDER ──
+        function renderPost(post) {
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            card.addEventListener('click', () => {
+                window.location.href = '/post?id=' + post.id;
+            });
+
+            const hasUnlisted = post.unlisted_side_effects === 'yes';
+            const bullets = summarize(post);
+
+            card.innerHTML = `
+                <div class="post-card-header">
+                    <div class="post-card-label-row">Unlisted side effects on medication label or patient information leaflet</div>
+                    <div><span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">${hasUnlisted ? 'Yes' : 'No'}</span></div>
+                </div>
+                <div class="preview-fade">
+                    <ul>${bullets.slice(0, 4).map(b => `<li>${b}</li>`).join('')}</ul>
+                </div>
+                <div class="post-card-footer">Read more →</div>
+            `;
+            document.getElementById('postList').appendChild(card);
+        }
+
+        function summarize(post) {
+            const bullets = [];
+            bullets.push(`Biological sex: ${formatValue(post.gender)}`);
+            bullets.push(`Dosage: ${post.dosage_amount} ${post.dosage_unit}, ${post.freq_count} time(s) per ${post.freq_per}`);
+            bullets.push(`Duration: ${post.duration_value} ${post.duration_unit}`);
+            bullets.push(`Achieved intended treatment effect: ${post.expected_effect}`);
+            if (post.gender === 'female') {
+                if (post.having_period) bullets.push('Was on menstrual period during medication');
+                if (post.was_pregnant)  bullets.push('Was pregnant during medication');
+            }
+            post.description.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
+            if (post.long_term_meds)    bullets.push(`Long-term medications: ${post.long_term_meds}`);
+            if (post.health_conditions) bullets.push(`Health conditions: ${post.health_conditions}`);
+            if (post.additional_notes)  bullets.push(`Additional notes: ${post.additional_notes}`);
+            return bullets;
+        }
+
+        function formatValue(val) {
+            if (!val) return '—';
+            return val.charAt(0).toUpperCase() + val.slice(1).replace(/_/g, ' ');
+        }
+
+        loadPosts();
+    </script>
+
+</body>
+</html>

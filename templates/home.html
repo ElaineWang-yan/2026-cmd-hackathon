@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MedEx — Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --ink: #1a1a18;
+    --ink-muted: #7a7a72;
+    --ink-faint: #b8b8b0;
+    --accent: #2a6b52;
+    --accent-hover: #205540;
+    --accent-light: #e8f2ee;
+    --border: #e4e3de;
+    --shadow-md: 0 4px 16px rgba(26,26,24,0.1), 0 12px 32px rgba(26,26,24,0.08);
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, #c8c7c0 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Navbar */
+  .navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 60px;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+    text-decoration: none;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+  .logo-med { font-family: 'Lora', serif; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.01em; }
+  .logo-ex  { font-family: 'Lora', serif; font-weight: 500; font-size: 20px; color: var(--accent); letter-spacing: -0.01em; }
+  .logo-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; margin-left: 2px; margin-bottom: 2px; flex-shrink: 0; }
+
+  .nav-search {
+    flex: 1;
+    max-width: 440px;
+    position: relative;
+  }
+  .nav-search svg {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+  .nav-search input {
+    width: 100%;
+    padding: 8px 14px 8px 36px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+  }
+  .nav-search input::placeholder { color: var(--ink-faint); }
+  .nav-search input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(42,107,82,0.1);
+  }
+
+  .nav-spacer { flex: 1; }
+
+  .btn-new-post {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+    box-shadow: 0 2px 8px rgba(42,107,82,0.2);
+    text-decoration: none;
+  }
+  .btn-new-post:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(42,107,82,0.28);
+  }
+  .btn-new-post:active { transform: translateY(0); }
+
+  .nav-profile { position: relative; flex-shrink: 0; }
+  .profile-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: box-shadow 0.18s, transform 0.12s;
+  }
+  .profile-avatar:hover {
+    box-shadow: 0 0 0 3px rgba(42,107,82,0.18);
+    transform: scale(1.05);
+  }
+
+  .dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    min-width: 180px;
+    overflow: hidden;
+    animation: dropIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .dropdown.open { display: block; }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .dropdown-email {
+    padding: 12px 16px 10px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: 'Nunito', sans-serif;
+    color: var(--ink);
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s;
+    font-weight: 400;
+    text-decoration: none;
+  }
+  .dropdown-item:hover { background: var(--bg); }
+  .dropdown-item.danger { color: #c0392b; }
+  .dropdown-item.danger:hover { background: #fdf2f2; }
+  .dropdown-divider { height: 1px; background: var(--border); }
+
+  /* Hero section */
+  .hero {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 140px 24px 80px;
+    text-align: center;
+    animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 99px;
+    margin-bottom: 28px;
+  }
+  .hero-tag span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+
+  .hero h1 {
+    font-family: 'Lora', serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero p {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--ink-muted);
+    line-height: 1.75;
+    margin-bottom: 40px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Feature cards */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 56px;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 20px;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(26,26,24,0.05);
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26,26,24,0.09);
+  }
+  .feature-icon {
+    width: 36px; height: 36px;
+    background: var(--accent-light);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    margin-bottom: 14px;
+  }
+  .feature-card h3 {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .feature-card p {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Divider */
+  .section-divider {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto 48px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-divider span { flex: 1; height: 1px; background: var(--border); }
+  .section-divider p { font-size: 12px; color: var(--ink-faint); white-space: nowrap; }
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  <a href="/home" class="nav-logo">
+    <span class="logo-med">Med</span>
+    <span class="logo-ex">Ex</span>
+    <div class="logo-dot"></div>
+  </a>
+
+  <div class="nav-search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" placeholder="Search experiences…" id="searchInput">
+  </div>
+
+  <div class="nav-spacer"></div>
+
+  <a href="/create-post" class="btn-new-post">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    New post
+  </a>
+
+  <div class="nav-profile" id="profileMenu">
+    <button class="profile-avatar" id="profileBtn">U</button>
+    <div class="dropdown" id="dropdown">
+      <div class="dropdown-email">user@example.com</div>
+      <a href="#" class="dropdown-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        My profile
+      </a>
+      <div class="dropdown-divider"></div>
+      <a href="/" class="dropdown-item danger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Log out
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="hero">
+
+    <div class="hero-tag">
+      <span></span>
+      Community · Experience · Insight
+    </div>
+
+    <h1>Your experience<br>fills the <em>gaps</em> medicine misses.</h1>
+
+    <p>Mainstream medical research doesn't reach everyone equally. MedEx is a space for underrepresented communities to share what they've lived through — unexpected drug responses, overlooked symptoms, and the realities that textbooks don't capture.</p>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">💊</div>
+        <h3>Real responses</h3>
+        <p>Share how medications or treatments affected you — especially when the reality differed from the label.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Search & discover</h3>
+        <p>Find experiences from people whose backgrounds, bodies, or conditions mirror your own.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <h3>Collective knowledge</h3>
+        <p>Every story adds to a living record that research has yet to catch up with.</p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  document.getElementById('searchInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && this.value.trim()) {
+    window.location.href = '/feed?medicine=' + encodeURIComponent(this.value.trim());
+  }
+});
+  const profileBtn = document.getElementById("profileBtn");
+  const dropdown   = document.getElementById("dropdown");
+  const profileMenu = document.getElementById("profileMenu");
+
+  profileBtn.addEventListener("click", () => {
+    dropdown.classList.toggle("open");
+  });
+
+  document.addEventListener("mousedown", (e) => {
+    if (!profileMenu.contains(e.target)) {
+      dropdown.classList.remove("open");
+    }
+  });
+</script>
+
+</body>
+</html>

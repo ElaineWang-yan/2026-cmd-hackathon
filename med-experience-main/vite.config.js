@@ -10,6 +10,9 @@ export default defineConfig({
       '/login': 'http://localhost:8080',
       '/register': 'http://localhost:8080',
       '/create-post': 'http://localhost:8080',
+      '/feed': 'http://localhost:8080',
+      '/posts': 'http://localhost:8080',
+      '/api': 'http://localhost:8080',
     }
   }
 })

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedExperience — Post</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f7f6f2;
+            --surface: #ffffff;
+            --ink: #1a1a18;
+            --ink-muted: #7a7a72;
+            --ink-faint: #b8b8b0;
+            --accent: #2a6b52;
+            --accent-hover: #205540;
+            --accent-light: #e8f2ee;
+            --border: #e4e3de;
+            --shadow-md: 0 4px 16px rgba(26,26,24,0.1), 0 12px 32px rgba(26,26,24,0.08);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: radial-gradient(circle, #c8c7c0 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            height: 60px;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            gap: 16px;
+        }
+        .nav-logo { display: flex; align-items: baseline; gap: 1px; text-decoration: none; flex-shrink: 0; margin-right: 8px; }
+        .logo-med { font-family: 'Lora', serif; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.01em; }
+        .logo-ex  { font-family: 'Lora', serif; font-weight: 500; font-size: 20px; color: var(--accent); letter-spacing: -0.01em; }
+        .logo-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; margin-left: 2px; margin-bottom: 2px; flex-shrink: 0; }
+        .nav-search { flex: 1; max-width: 440px; position: relative; }
+        .nav-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
+        .nav-search input {
+            width: 100%; padding: 8px 14px 8px 36px;
+            background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: 'Nunito', sans-serif; font-size: 14px; color: var(--ink);
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+        }
+        .nav-search input::placeholder { color: var(--ink-faint); }
+        .nav-search input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(42,107,82,0.1); }
+        .nav-spacer { flex: 1; }
+        .btn-new-post {
+            display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+            background: var(--accent); border: none; border-radius: 8px; color: #fff;
+            font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+            cursor: pointer; flex-shrink: 0; text-decoration: none;
+            transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+            box-shadow: 0 2px 8px rgba(42,107,82,0.2);
+        }
+        .btn-new-post:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(42,107,82,0.28); }
+        .nav-profile { position: relative; flex-shrink: 0; }
+        .profile-avatar {
+            width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+            transition: box-shadow 0.18s, transform 0.12s;
+        }
+        .profile-avatar:hover { box-shadow: 0 0 0 3px rgba(42,107,82,0.18); transform: scale(1.05); }
+        .dropdown {
+            display: none; position: absolute; top: calc(100% + 10px); right: 0;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+            box-shadow: var(--shadow-md); min-width: 180px; overflow: hidden;
+            animation: dropIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .dropdown.open { display: block; }
+        @keyframes dropIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .dropdown-email { padding: 12px 16px 10px; font-size: 12px; color: var(--ink-faint); border-bottom: 1px solid var(--border); }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+            font-size: 14px; font-family: 'Nunito', sans-serif; color: var(--ink);
+            background: none; border: none; width: 100%; text-align: left;
+            cursor: pointer; transition: background 0.12s; text-decoration: none;
+        }
+        .dropdown-item:hover { background: var(--bg); }
+        .dropdown-item.danger { color: #c0392b; }
+        .dropdown-item.danger:hover { background: #fdf2f2; }
+        .dropdown-divider { height: 1px; background: var(--border); }
+
+        /* PAGE */
+        .page-wrap {
+            position: relative; z-index: 1;
+            max-width: 720px; margin: 88px auto 60px; padding: 0 24px;
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 13px; font-weight: 600; color: var(--ink-muted);
+            text-decoration: none; margin-bottom: 24px; transition: color 0.15s;
+        }
+        .back-link:hover { color: var(--accent); }
+
+        /* POST DETAIL */
+        .post-detail {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 28px 32px; margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(26,26,24,0.05);
+        }
+        .post-detail ul { padding-left: 18px; list-style: disc; }
+        .post-detail ul li { font-size: 14px; font-weight: 300; line-height: 1.85; color: var(--ink-muted); }
+        .badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+        .badge-yes { background: #dcfce7; color: #166534; }
+        .badge-no  { background: #fee2e2; color: #991b1b; }
+
+        /* SURVEY */
+        .survey-card {
+            background: var(--accent-light); border: 1px solid #c5dfd6;
+            border-radius: 14px; padding: 22px 24px; margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(26,26,24,0.05);
+        }
+        .survey-question {
+            font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 16px;
+        }
+        .survey-buttons {
+            display: flex; gap: 10px; margin-bottom: 16px;
+        }
+        .btn-vote {
+            padding: 9px 24px; border-radius: 8px; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+            transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+            border: 1.5px solid var(--border); background: var(--surface); color: var(--ink-muted);
+        }
+        .btn-vote:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
+        .btn-vote.active-yes {
+            background: var(--accent); color: #fff; border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(42,107,82,0.2);
+        }
+        .btn-vote.active-no {
+            background: #fee2e2; color: #991b1b; border-color: #fca5a5;
+        }
+
+        /* PROGRESS BAR */
+        .survey-results { margin-top: 4px; }
+        .survey-row {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+        }
+        .survey-row-label {
+            font-size: 12px; font-weight: 600; color: var(--ink-muted);
+            width: 28px; flex-shrink: 0;
+        }
+        .survey-bar-wrap {
+            flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden;
+        }
+        .survey-bar {
+            height: 100%; border-radius: 99px;
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .survey-bar.yes { background: var(--accent); }
+        .survey-bar.no  { background: #fca5a5; }
+        .survey-row-count {
+            font-size: 12px; color: var(--ink-faint); width: 60px; text-align: right; flex-shrink: 0;
+        }
+        .survey-total {
+            font-size: 12px; color: var(--ink-faint); margin-top: 6px;
+        }
+
+        /* COMMENTS */
+        .section-title { font-family: 'Lora', serif; font-size: 18px; font-weight: 500; color: var(--ink); margin-bottom: 14px; letter-spacing: -0.01em; }
+        .comment-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 20px 24px; margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(26,26,24,0.05);
+        }
+        .comment-input {
+            width: 100%; min-height: 80px; resize: vertical;
+            border: 1.5px solid var(--border); border-radius: 8px;
+            padding: 10px 14px; font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 300; color: var(--ink);
+            background: var(--bg); margin-bottom: 12px;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .comment-input::placeholder { color: var(--ink-faint); }
+        .comment-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,107,82,0.1); background: #fff; }
+        .btn-submit {
+            padding: 8px 18px; background: var(--accent); color: #fff;
+            border: none; border-radius: 8px; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: background 0.18s, transform 0.12s;
+            box-shadow: 0 2px 8px rgba(42,107,82,0.2);
+        }
+        .btn-submit:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .comment-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+            box-shadow: 0 1px 4px rgba(26,26,24,0.04);
+            animation: fadeUp 0.2s ease both;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .comment-body { flex: 1; }
+        .comment-content { font-size: 14px; font-weight: 300; color: var(--ink-muted); line-height: 1.7; }
+        .comment-meta { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
+        .btn-delete {
+            background: none; border: none; color: var(--ink-faint);
+            cursor: pointer; font-size: 13px; padding: 3px 7px;
+            border-radius: 6px; flex-shrink: 0; line-height: 1;
+            transition: color 0.15s, background 0.15s;
+        }
+        .btn-delete:hover { color: #c0392b; background: #fdf2f2; }
+        .no-comments { text-align: center; color: var(--ink-faint); font-size: 14px; padding: 32px 0; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/home" class="nav-logo">
+            <span class="logo-med">Med</span>
+            <span class="logo-ex">Ex</span>
+            <div class="logo-dot"></div>
+        </a>
+        <div class="nav-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search experiences…" id="searchInput">
+        </div>
+        <div class="nav-spacer"></div>
+        <a href="/create-post" class="btn-new-post">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New post
+        </a>
+        <div class="nav-profile" id="profileMenu">
+            <button class="profile-avatar" id="profileBtn">U</button>
+            <div class="dropdown" id="dropdown">
+                <div class="dropdown-email" id="navEmail">—</div>
+                <a href="#" class="dropdown-item">My profile</a>
+                <div class="dropdown-divider"></div>
+                <a href="/" class="dropdown-item danger">Log out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- PAGE -->
+    <div class="page-wrap">
+
+        <a class="back-link" href="javascript:history.back()">← Back</a>
+
+        <div class="post-detail" id="postDetail">
+            <div style="color:var(--ink-faint);font-size:14px">Loading...</div>
+        </div>
+
+        <!-- SURVEY -->
+        <div class="survey-card">
+            <div class="survey-question">Did you experience similar side effects?</div>
+            <div class="survey-buttons">
+                <button class="btn-vote" id="btnYes" onclick="vote('yes')">Yes, me too</button>
+                <button class="btn-vote" id="btnNo"  onclick="vote('no')">Not really</button>
+            </div>
+            <div class="survey-results" id="surveyResults" style="display:none">
+                <div class="survey-row">
+                    <div class="survey-row-label">Yes</div>
+                    <div class="survey-bar-wrap"><div class="survey-bar yes" id="barYes" style="width:0%"></div></div>
+                    <div class="survey-row-count" id="countYes">0</div>
+                </div>
+                <div class="survey-row">
+                    <div class="survey-row-label">No</div>
+                    <div class="survey-bar-wrap"><div class="survey-bar no" id="barNo" style="width:0%"></div></div>
+                    <div class="survey-row-count" id="countNo">0</div>
+                </div>
+                <div class="survey-total" id="surveyTotal"></div>
+            </div>
+        </div>
+
+        <div class="section-title">Comments</div>
+
+        <div class="comment-box">
+            <textarea class="comment-input" id="commentInput" placeholder="Share your thoughts or a related experience…"></textarea>
+            <button class="btn-submit" id="submitBtn" onclick="submitComment()">Post comment</button>
+        </div>
+
+        <div id="commentList"></div>
+
+    </div>
+
+    <script>
+        // ── NAVBAR ──
+        const profileBtn  = document.getElementById("profileBtn");
+        const dropdown    = document.getElementById("dropdown");
+        const profileMenu = document.getElementById("profileMenu");
+        profileBtn.addEventListener("click", () => dropdown.classList.toggle("open"));
+        document.addEventListener("mousedown", (e) => {
+            if (!profileMenu.contains(e.target)) dropdown.classList.remove("open");
+        });
+        document.getElementById('searchInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && this.value.trim())
+                window.location.href = '/feed?medicine=' + encodeURIComponent(this.value.trim());
+        });
+
+        // ── STATE ──
+        const params = new URLSearchParams(window.location.search);
+        const postId = params.get('id');
+        let CURRENT_USER_ID = null;
+        let currentVote = null; // "yes", "no", or null
+
+        // ── LOAD CURRENT USER ──
+        async function loadMe() {
+            const res  = await fetch('/api/me', { credentials: 'include' });
+            const data = await res.json();
+            CURRENT_USER_ID = data.user_id;
+            if (data.email) document.getElementById('navEmail').textContent = data.email;
+        }
+
+        // ── POST ──
+        async function loadPost() {
+            const res  = await fetch(`/api/posts/${postId}`, { credentials: 'include' });
+            const post = await res.json();
+            const hasUnlisted = post.unlisted_side_effects === 'yes';
+            const bullets = summarize(post);
+            document.getElementById('postDetail').innerHTML = `
+                <div style="margin-bottom:16px">
+                    <div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">
+                        Unlisted side effects on medication label or patient information leaflet
+                    </div>
+                    <span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">${hasUnlisted ? 'Yes' : 'No'}</span>
+                </div>
+                <ul>${bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+            `;
+        }
+
+        // ── SURVEY ──
+        async function loadSurvey() {
+            const res  = await fetch(`/api/posts/${postId}/survey`, { credentials: 'include' });
+            const data = await res.json();
+            updateSurveyUI(data);
+        }
+
+        function updateSurveyUI(data) {
+            currentVote = data.user_vote || null;
+            const total = data.total || 0;
+
+            // update button states
+            const btnYes = document.getElementById('btnYes');
+            const btnNo  = document.getElementById('btnNo');
+            btnYes.className = 'btn-vote' + (currentVote === 'yes' ? ' active-yes' : '');
+            btnNo.className  = 'btn-vote' + (currentVote === 'no'  ? ' active-no'  : '');
+
+            // show results if anyone has voted
+            const resultsEl = document.getElementById('surveyResults');
+            if (total > 0) {
+                resultsEl.style.display = 'block';
+                const yesPct = Math.round((data.yes_count / total) * 100);
+                const noPct  = Math.round((data.no_count  / total) * 100);
+
+                document.getElementById('barYes').style.width  = yesPct + '%';
+                document.getElementById('barNo').style.width   = noPct  + '%';
+                document.getElementById('countYes').textContent = `${data.yes_count} (${yesPct}%)`;
+                document.getElementById('countNo').textContent  = `${data.no_count}  (${noPct}%)`;
+                document.getElementById('surveyTotal').textContent =
+                    `${data.yes_count} out of ${total} ${total === 1 ? 'person' : 'people'} had a similar experience`;
+            } else {
+                resultsEl.style.display = 'none';
+            }
+        }
+
+        async function vote(answer) {
+            // clicking same button again = unvote
+            const payload = currentVote === answer ? null : answer;
+            const res  = await fetch(`/api/posts/${postId}/survey`, {
+                method:      'POST',
+                credentials: 'include',
+                headers:     { 'Content-Type': 'application/json' },
+                body:        JSON.stringify({ answer: payload })
+            });
+            if (res.status === 401) {
+                alert('Please log in to vote.');
+                return;
+            }
+            const data = await res.json();
+            updateSurveyUI(data);
+        }
+
+        // ── COMMENTS ──
+        async function loadComments() {
+            const res      = await fetch(`/api/posts/${postId}/comments`, { credentials: 'include' });
+            const comments = await res.json();
+            const list     = document.getElementById('commentList');
+            list.innerHTML = '';
+            if (comments.length === 0) {
+                list.innerHTML = '<div class="no-comments">No comments yet — be the first to share.</div>';
+                return;
+            }
+            comments.forEach(renderComment);
+        }
+
+        function renderComment(c) {
+            const card = document.createElement('div');
+            card.className = 'comment-card';
+            card.id = `comment-${c.id}`;
+            const isOwn = CURRENT_USER_ID && c.user_id === CURRENT_USER_ID;
+            const date  = new Date(c.created_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+            card.innerHTML = `
+                <div class="comment-body">
+                    <div class="comment-content">${c.content}</div>
+                    <div class="comment-meta">${date}</div>
+                </div>
+                ${isOwn ? `<button class="btn-delete" onclick="deleteComment(${c.id})" title="Delete">✕</button>` : ''}
+            `;
+            document.getElementById('commentList').appendChild(card);
+        }
+
+        async function submitComment() {
+            const input   = document.getElementById('commentInput');
+            const btn     = document.getElementById('submitBtn');
+            const content = input.value.trim();
+            if (!content) return;
+            btn.disabled    = true;
+            btn.textContent = 'Posting…';
+            const res = await fetch(`/api/posts/${postId}/comments`, {
+                method:      'POST',
+                credentials: 'include',
+                headers:     { 'Content-Type': 'application/json' },
+                body:        JSON.stringify({ content })
+            });
+            btn.disabled    = false;
+            btn.textContent = 'Post comment';
+            if (res.status === 401) {
+                alert('Please log in to post a comment.');
+                return;
+            }
+            input.value = '';
+            loadComments();
+        }
+
+        async function deleteComment(commentId) {
+            await fetch(`/api/comments/${commentId}`, { method: 'DELETE', credentials: 'include' });
+            document.getElementById(`comment-${commentId}`)?.remove();
+            if (!document.getElementById('commentList').children.length) {
+                document.getElementById('commentList').innerHTML =
+                    '<div class="no-comments">No comments yet — be the first to share.</div>';
+            }
+        }
+
+        // ── HELPERS ──
+        function summarize(post) {
+            const bullets = [];
+            bullets.push(`Biological sex: ${formatValue(post.gender)}`);
+            bullets.push(`Dosage: ${post.dosage_amount} ${post.dosage_unit}, ${post.freq_count} time(s) per ${post.freq_per}`);
+            bullets.push(`Duration: ${post.duration_value} ${post.duration_unit}`);
+            bullets.push(`Achieved intended treatment effect: ${post.expected_effect}`);
+            if (post.gender === 'female') {
+                if (post.having_period) bullets.push('Was on menstrual period during medication');
+                if (post.was_pregnant)  bullets.push('Was pregnant during medication');
+            }
+            post.description.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
+            if (post.long_term_meds)    bullets.push(`Long-term medications: ${post.long_term_meds}`);
+            if (post.health_conditions) bullets.push(`Health conditions: ${post.health_conditions}`);
+            if (post.additional_notes)  bullets.push(`Additional notes: ${post.additional_notes}`);
+            return bullets;
+        }
+
+        function formatValue(val) {
+            if (!val) return '—';
+            return val.charAt(0).toUpperCase() + val.slice(1).replace(/_/g, ' ');
+        }
+
+        // ── INIT ──
+        async function init() {
+            await loadMe();
+            loadPost();
+            loadSurvey();
+            loadComments();
+        }
+
+        init();
+    </script>
+
+</body>
+</html>
