@@ -111,7 +111,11 @@ def login():
             "SELECT id, password FROM users WHERE email = ?", (email,)
         ).fetchone()
 
-    if row and check_password_hash(row[1], password):
+    try:
+        valid = row and check_password_hash(row[1], password)
+    except Exception:
+        valid = False
+    if valid:
         session["user_id"] = row[0]
         session["email"] = email
         return jsonify({"message": "Login successful!"}), 200
@@ -128,7 +132,7 @@ def register():
     if not email or not password:
         return jsonify({"message": "Email and password are required."}), 400
 
-    hashed = generate_password_hash(password)
+    hashed = generate_password_hash(password, method='pbkdf2:sha256')
     try:
         with sqlite3.connect(DB_PATH) as conn:
             conn.execute(

@@ -604,16 +604,39 @@
       additionalNotes: document.getElementById('additionalNotes').value.trim(),
     };
 
-            const res = await fetch('/posts', {
+            const mongoPayload = {
+                drugName: formData.drugName,
+                userInfo: {
+                    gender: formData.gender,
+                    menstrualPhase: formData.havingPeriod,
+                },
+                dosage: {
+                    amount: formData.dosage.amount,
+                    unit: formData.dosage.unit,
+                    times: formData.dosage.frequency,
+                    frequency: formData.dosage.per,
+                },
+                duration: formData.duration.value + ' ' + formData.duration.unit,
+                expectedEffect: formData.expectedEffect === 'yes',
+                differentFromPackage: formData.differentFromExpected === 'yes',
+                reactionDescription: formData.description,
+                additionalInfo: {
+                    longTermUse: !!formData.longTermMeds,
+                    pregnant: formData.wasPregnant,
+                    notes: [formData.longTermMeds, formData.healthConditions, formData.additionalNotes].filter(Boolean).join(' | '),
+                },
+            };
+
+            const res = await fetch('http://localhost:5001/api/posts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(mongoPayload)
             });
             const result = await res.json();
-            if (res.ok) {
+            if (result.success) {
                 window.location.href = '/feed?medicine=' + encodeURIComponent(formData.drugName);
             } else {
-                alert('Error: ' + result.message);
+                alert('Error: ' + (result.error || 'Unknown error'));
             }
         });
     </script>
