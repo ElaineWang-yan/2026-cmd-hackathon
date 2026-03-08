@@ -300,6 +300,54 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post()
+/**
+ * POST /posts
+ * Create a new medication experience post
+ */
+router.post('/', async (req, res) => {
+  try {
+    const {
+      drugName,
+      userInfo,
+      dosage,
+      duration,
+      expectedEffect,
+      differentFromPackage,
+      reactionDescription,
+      additionalInfo,
+    } = req.body;
+
+    if (!drugName) {
+      return res.status(400).json({ success: false, error: 'drugName is required' });
+    }
+
+    const newPost = {
+      drugName,
+      userInfo: userInfo || {},
+      dosage: dosage || {},
+      duration,
+      expectedEffect,
+      differentFromPackage,
+      reactionDescription,
+      additionalInfo: additionalInfo || {},
+      createdAt: new Date(),
+    };
+
+    const postsCollection = await getPostsCollection();
+    const result = await postsCollection.insertOne(newPost);
+
+    res.status(201).json({
+      success: true,
+      post: { _id: result.insertedId, ...newPost },
+    });
+  } catch (error) {
+    console.error('POST /posts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create post',
+      details: error.message,
+    });
+  }
+});
 
 module.exports = router;
