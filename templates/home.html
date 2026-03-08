@@ -386,6 +386,11 @@
 </main>
 
 <script>
+  document.getElementById('searchInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && this.value.trim()) {
+    window.location.href = '/feed?medicine=' + encodeURIComponent(this.value.trim());
+  }
+});
   const profileBtn = document.getElementById("profileBtn");
   const dropdown   = document.getElementById("dropdown");
   const profileMenu = document.getElementById("profileMenu");
