@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+
+<body>
+
+<h2>Register</h2>
+
+<form id="registerForm">
+
+    <label>Email:</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Password:</label><br>
+    <input type="password" id="password" required><br><br>
+
+    <label>Confirm Password:</label><br>
+    <input type="password" id="confirmPassword" required><br><br>
+
+    <button type="submit">Register</button>
+
+</form>
+
+<p id="message"></p>
+
+<p>Already have an account? <a href="/">Login</a></p>
+
+<script>
+
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+        document.getElementById("message").innerText = "Passwords do not match.";
+        return;
+    }
+
+    const response = await fetch("/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
+    });
+
+    const data = await response.json();
+    document.getElementById("message").innerText = data.message;
+
+    if (response.ok) {
+        setTimeout(() => window.location.href = "/", 1500);
+    }
+
+});
+
+</script>
+
+</body>
+</html>
