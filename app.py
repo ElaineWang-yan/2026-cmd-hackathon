@@ -5,6 +5,8 @@ import os
 
 app = Flask(__name__)
 app.secret_key = "change_this_to_a_random_secret"
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
 DB_PATH = "users.db"
 
 
