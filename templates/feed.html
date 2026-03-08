@@ -210,7 +210,6 @@
             height: fit-content;
             box-shadow: 0 2px 8px rgba(26,26,24,0.05);
         }
-
         .sidebar h3 {
             font-size: 11px;
             font-weight: 600;
@@ -230,7 +229,6 @@
             margin-bottom: 20px;
             letter-spacing: -0.02em;
         }
-
         .medicine-heading span {
             font-family: 'Nunito', sans-serif;
             font-size: 14px;
@@ -248,6 +246,7 @@
             margin-bottom: 14px;
             box-shadow: 0 2px 8px rgba(26,26,24,0.05);
             transition: transform 0.18s, box-shadow 0.18s;
+            cursor: pointer;
         }
         .post-card:hover {
             transform: translateY(-2px);
@@ -283,6 +282,26 @@
             font-weight: 300;
             line-height: 1.85;
             color: var(--ink-muted);
+        }
+
+        .preview-fade {
+            position: relative;
+            max-height: 110px;
+            overflow: hidden;
+        }
+        .preview-fade::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 48px;
+            background: linear-gradient(transparent, white);
+        }
+
+        .post-card-footer {
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
         }
 
         .empty-state {
@@ -332,7 +351,6 @@
 
     <!-- LAYOUT -->
     <div class="layout">
-
         <aside class="sidebar">
             <h3>Filter</h3>
         </aside>
@@ -343,7 +361,6 @@
             </div>
             <div id="postList"></div>
         </main>
-
     </div>
 
     <script>
@@ -388,9 +405,9 @@
                 .filter(s => s.length > 4)
                 .forEach(s => bullets.push(s));
 
-            if (post.long_term_meds)   bullets.push(`Long-term medications: ${post.long_term_meds}`);
+            if (post.long_term_meds)    bullets.push(`Long-term medications: ${post.long_term_meds}`);
             if (post.health_conditions) bullets.push(`Health conditions: ${post.health_conditions}`);
-            if (post.additional_notes) bullets.push(`Additional notes: ${post.additional_notes}`);
+            if (post.additional_notes)  bullets.push(`Additional notes: ${post.additional_notes}`);
 
             return bullets;
         }
@@ -404,6 +421,10 @@
             const card = document.createElement('div');
             card.className = 'post-card';
 
+            card.addEventListener('click', () => {
+                window.location.href = '/post?id=' + post.id;
+            });
+
             const hasUnlisted = post.unlisted_side_effects === 'yes';
             const bullets = summarize(post);
 
@@ -414,7 +435,10 @@
                         <span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">${hasUnlisted ? 'Yes' : 'No'}</span>
                     </div>
                 </div>
-                <ul>${bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+                <div class="preview-fade">
+                    <ul>${bullets.slice(0, 4).map(b => `<li>${b}</li>`).join('')}</ul>
+                </div>
+                <div class="post-card-footer">Read more →</div>
             `;
 
             document.getElementById('postList').appendChild(card);
