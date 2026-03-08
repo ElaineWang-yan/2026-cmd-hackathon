@@ -110,8 +110,7 @@
             background: none; border: 1.5px solid #fca5a5; color: #c0392b;
             border-radius: 8px; padding: 6px 14px;
             font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 600;
-            cursor: pointer; transition: background 0.15s;
-            flex-shrink: 0;
+            cursor: pointer; transition: background 0.15s; flex-shrink: 0;
         }
         .btn-delete-post:hover { background: #fdf2f2; }
 
@@ -177,7 +176,7 @@
         }
         .btn-cancel:hover { border-color: var(--ink-muted); color: var(--ink); }
 
-        /* TOP-LEVEL COMMENT CARD */
+        /* COMMENT CARD */
         .comment-card {
             background: var(--surface); border: 1px solid var(--border);
             border-radius: 12px; margin-bottom: 10px;
@@ -192,6 +191,7 @@
             display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
         }
         .comment-body { flex: 1; min-width: 0; }
+        .comment-author { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
         .comment-content { font-size: 14px; font-weight: 300; color: var(--ink-muted); line-height: 1.7; }
         .comment-meta { font-size: 11px; color: var(--ink-faint); margin-top: 5px; }
 
@@ -212,7 +212,7 @@
         }
         .btn-delete:hover { color: #c0392b; background: #fdf2f2; }
 
-        /* EXPAND REPLIES TOGGLE */
+        /* REPLIES TOGGLE */
         .replies-toggle {
             display: flex; align-items: center; gap: 6px;
             padding: 8px 20px 10px;
@@ -246,7 +246,7 @@
         .reply-mention { color: var(--accent); font-weight: 600; }
         .reply-meta { font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
 
-        /* INLINE REPLY COMPOSE */
+        /* REPLY COMPOSE */
         .reply-compose {
             display: none;
             padding: 12px 20px 14px 36px;
@@ -473,6 +473,7 @@
             main.className = 'comment-main';
             main.innerHTML = `
                 <div class="comment-body">
+                    <div class="comment-author">${escapeHtml(c.author_email)}</div>
                     <div class="comment-content">${escapeHtml(c.content)}</div>
                     <div class="comment-meta">${date}</div>
                 </div>
@@ -497,6 +498,7 @@
                     : '';
                 replyEl.innerHTML = `
                     <div class="reply-body">
+                        <div class="comment-author">${escapeHtml(r.author_email)}</div>
                         <div class="reply-content">${mention}${escapeHtml(r.content)}</div>
                         <div class="reply-meta">${formatDate(r.created_at)}</div>
                     </div>
@@ -560,7 +562,6 @@
             if (arrow) arrow.classList.add('open');
 
             ensureToggle(commentId);
-
             compose.classList.add('open');
             input.focus();
         }
@@ -583,7 +584,7 @@
             }
         }
 
-        // ── SUBMIT TOP-LEVEL COMMENT ──
+        // ── SUBMIT COMMENT ──
         async function submitComment() {
             const input   = document.getElementById('commentInput');
             const btn     = document.getElementById('submitBtn');
@@ -619,11 +620,7 @@
             const res = await fetch(`/api/posts/${postId}/comments`, {
                 method: 'POST', credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content,
-                    parent_id:      parentCommentId,
-                    reply_to_email: replyToEmail
-                })
+                body: JSON.stringify({ content, parent_id: parentCommentId, reply_to_email: replyToEmail })
             });
 
             submitBtn.disabled = false;
