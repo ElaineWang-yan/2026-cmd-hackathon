@@ -186,74 +186,60 @@ def save_post():
 
 @app.route("/api/posts")
 def get_posts():
-    medicine            = request.args.get("medicine", "").strip().lower()
-    gender              = request.args.get("gender", "").strip().lower()
-    expected_effect     = request.args.get("expected_effect", "").strip().lower()
-    unlisted            = request.args.get("unlisted_side_effects", "").strip().lower()
-    duration_bucket     = request.args.get("duration", "").strip().lower()
+    from bson import ObjectId
+    medicine        = request.args.get("medicine", "").strip()
+    gender          = request.args.get("gender", "").strip().lower()
+    expected_effect = request.args.get("expected_effect", "").strip().lower()
+    unlisted        = request.args.get("unlisted_side_effects", "").strip().lower()
+    duration_bucket = request.args.get("duration", "").strip().lower()
 
-    query  = "SELECT * FROM posts WHERE LOWER(drug_name) = ?"
-    params = [medicine]
+    query = {}
+
+    if medicine:
+        query["drugName"] = {"$regex": medicine, "$options": "i"}
 
     if gender:
-        query += " AND LOWER(gender) = ?"
-        params.append(gender)
+        query["userInfo.gender"] = gender
 
     if expected_effect:
-        query += " AND LOWER(expected_effect) = ?"
-        params.append(expected_effect)
+        query["expectedEffect"] = (expected_effect == "yes")
 
     if unlisted:
-        query += " AND LOWER(unlisted_side_effects) = ?"
-        params.append(unlisted)
+        query["differentFromPackage"] = (unlisted == "yes")
 
-    # duration filter: convert stored duration_value + duration_unit to days for comparison
     if duration_bucket == "short":
-        # under 1 week — we check rows where duration in days < 7
-        query += """
-            AND (
-                (LOWER(duration_unit) IN ('day','days')  AND duration_value < 7)
-             OR (LOWER(duration_unit) IN ('hour','hours') AND duration_value < 168)
-            )
-        """
+        query["$or"] = [
+            {"duration": {"$regex": r"^[1-6]\s*day", "$options": "i"}},
+        ]
     elif duration_bucket == "medium":
-        # 1–4 weeks
-        query += """
-            AND (
-                (LOWER(duration_unit) IN ('day','days')   AND duration_value BETWEEN 7 AND 28)
-             OR (LOWER(duration_unit) IN ('week','weeks') AND duration_value BETWEEN 1 AND 4)
-            )
-        """
+        query["$or"] = [
+            {"duration": {"$regex": r"^([7-9]|[12][0-9]|28)\s*day", "$options": "i"}},
+            {"duration": {"$regex": r"^[1-4]\s*week", "$options": "i"}},
+        ]
     elif duration_bucket == "long":
-        # over 1 month
-        query += """
-            AND (
-                (LOWER(duration_unit) IN ('day','days')    AND duration_value > 28)
-             OR (LOWER(duration_unit) IN ('week','weeks')  AND duration_value > 4)
-             OR (LOWER(duration_unit) IN ('month','months'))
-             OR (LOWER(duration_unit) IN ('year','years'))
-            )
-        """
+        query["$or"] = [
+            {"duration": {"$regex": r"month|year", "$options": "i"}},
+            {"duration": {"$regex": r"^(29|[3-9]\d|\d{3,})\s*day", "$options": "i"}},
+            {"duration": {"$regex": r"^[5-9]\d*\s*week", "$options": "i"}},
+        ]
 
-    query += " ORDER BY created_at ASC"
-
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(query, params).fetchall()
-
-    return jsonify([dict(r) for r in rows])
+    posts = list(mongo_posts.find(query).sort("createdAt", -1))
+    for p in posts:
+        p["_id"] = str(p["_id"])
+    return jsonify(posts)
 
 
-@app.route("/api/posts/<int:post_id>")
+@app.route("/api/posts/<post_id>")
 def get_post(post_id):
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        row = conn.execute(
-            "SELECT * FROM posts WHERE id = ?", (post_id,)
-        ).fetchone()
-    if not row:
+    from bson import ObjectId
+    try:
+        post = mongo_posts.find_one({"_id": ObjectId(post_id)})
+    except Exception:
+        return jsonify({"error": "Invalid post ID"}), 400
+    if not post:
         return jsonify({"error": "Post not found"}), 404
-    return jsonify(dict(row))
+    post["_id"] = str(post["_id"])
+    return jsonify(post)
 
 
 # ── COMMENTS API ──────────────────────────────────────────

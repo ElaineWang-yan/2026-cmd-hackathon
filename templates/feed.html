@@ -378,10 +378,10 @@
             const card = document.createElement('div');
             card.className = 'post-card';
             card.addEventListener('click', () => {
-                window.location.href = '/post?id=' + post.id;
+                window.location.href = '/post?id=' + post._id;
             });
 
-            const hasUnlisted = post.unlisted_side_effects === 'yes';
+            const hasUnlisted = post.differentFromPackage === true;
             const bullets = summarize(post);
 
             card.innerHTML = `
@@ -399,18 +399,21 @@
 
         function summarize(post) {
             const bullets = [];
-            bullets.push(`Biological sex: ${formatValue(post.gender)}`);
-            bullets.push(`Dosage: ${post.dosage_amount} ${post.dosage_unit}, ${post.freq_count} time(s) per ${post.freq_per}`);
-            bullets.push(`Duration: ${post.duration_value} ${post.duration_unit}`);
-            bullets.push(`Achieved intended treatment effect: ${post.expected_effect}`);
-            if (post.gender === 'female') {
-                if (post.having_period) bullets.push('Was on menstrual period during medication');
-                if (post.was_pregnant)  bullets.push('Was pregnant during medication');
+            const gender = post.userInfo?.gender || '';
+            const dosage = post.dosage || {};
+            const info   = post.additionalInfo || {};
+            bullets.push(`Biological sex: ${formatValue(gender)}`);
+            bullets.push(`Dosage: ${dosage.amount ?? '—'} ${dosage.unit ?? ''}, ${dosage.times ?? '—'} time(s) per ${dosage.frequency ?? '—'}`);
+            bullets.push(`Duration: ${post.duration ?? '—'}`);
+            bullets.push(`Achieved intended treatment effect: ${post.expectedEffect ? 'yes' : 'no'}`);
+            if (gender === 'female') {
+                if (post.userInfo?.menstrualPhase) bullets.push('Was on menstrual period during medication');
+                if (info.pregnant)                 bullets.push('Was pregnant during medication');
             }
-            post.description.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
-            if (post.long_term_meds)    bullets.push(`Long-term medications: ${post.long_term_meds}`);
-            if (post.health_conditions) bullets.push(`Health conditions: ${post.health_conditions}`);
-            if (post.additional_notes)  bullets.push(`Additional notes: ${post.additional_notes}`);
+            if (post.reactionDescription) {
+                post.reactionDescription.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
+            }
+            if (info.notes) bullets.push(`Notes: ${info.notes}`);
             return bullets;
         }
 
