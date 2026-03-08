@@ -1,11 +1,17 @@
 from flask import Flask, request, jsonify, render_template, session
 from werkzeug.security import generate_password_hash, check_password_hash
+from pymongo import MongoClient
 import sqlite3
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "change_this_to_a_random_secret"
 DB_PATH = "users.db"
+
+MONGODB_URI = "mongodb+srv://yuyan06150723_db_user:UE2plhxIn4157xJq@cluster0.3vek23t.mongodb.net/medication_forum?appName=Cluster0"
+_mongo_client = MongoClient(MONGODB_URI)
+mongo_posts = _mongo_client["medication_forum"]["posts"]
 
 
 def init_db():
@@ -151,27 +157,31 @@ def save_post():
     data = request.get_json()
     dosage = data.get("dosage", {})
     duration = data.get("duration", {})
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("""
-            INSERT INTO posts (
-                drug_name, gender, having_period, was_pregnant,
-                dosage_amount, dosage_unit, freq_count, freq_per,
-                duration_value, duration_unit,
-                expected_effect, unlisted_side_effects, description,
-                long_term_meds, health_conditions, additional_notes
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """, (
-            data.get("drugName"), data.get("gender"),
-            int(data.get("havingPeriod", False)), int(data.get("wasPregnant", False)),
-            dosage.get("amount"), dosage.get("unit"),
-            dosage.get("frequency"), dosage.get("per"),
-            duration.get("value"), duration.get("unit"),
-            data.get("expectedEffect"), data.get("differentFromExpected"),
-            data.get("description"),
-            data.get("longTermMeds"), data.get("healthConditions"), data.get("additionalNotes")
-        ))
-        conn.commit()
-    return jsonify({"message": "Post saved.", "drug": data.get("drugName")}), 201
+    doc = {
+        "drugName": data.get("drugName"),
+        "userInfo": {
+            "gender": data.get("gender"),
+            "menstrualPhase": bool(data.get("havingPeriod", False)),
+        },
+        "dosage": {
+            "amount": dosage.get("amount"),
+            "unit": dosage.get("unit"),
+            "times": dosage.get("frequency"),
+            "frequency": dosage.get("per"),
+        },
+        "duration": str(duration.get("value", "")) + " " + str(duration.get("unit", "")),
+        "expectedEffect": data.get("expectedEffect") == "yes",
+        "differentFromPackage": data.get("differentFromExpected") == "yes",
+        "reactionDescription": data.get("description"),
+        "additionalInfo": {
+            "longTermUse": bool(data.get("longTermMeds")),
+            "pregnant": bool(data.get("wasPregnant", False)),
+            "notes": " | ".join(filter(None, [data.get("longTermMeds"), data.get("healthConditions"), data.get("additionalNotes")])),
+        },
+        "createdAt": datetime.utcnow(),
+    }
+    mongo_posts.insert_one(doc)
+    return jsonify({"success": True, "message": "Post saved.", "drug": data.get("drugName")}), 201
 
 
 @app.route("/api/posts")
