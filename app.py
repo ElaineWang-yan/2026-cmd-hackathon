@@ -195,6 +195,33 @@ def save_post():
     return jsonify({"message": "Post saved.", "drug": data.get("drugName")}), 201
 
 
+@app.route("/api/posts/<int:post_id>", methods=["DELETE"])
+def delete_post(post_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not logged in"}), 401
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT user_id FROM posts WHERE id = %s", (post_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"error": "Post not found"}), 404
+            if row[0] != user_id:
+                return jsonify({"error": "Not your post"}), 403
+            # Delete replies first, then top-level comments, then votes, then post
+            cur.execute("""
+                DELETE FROM comments WHERE parent_id IN (
+                    SELECT id FROM comments WHERE post_id = %s
+                )
+            """, (post_id,))
+            cur.execute("DELETE FROM comments WHERE post_id = %s", (post_id,))
+            cur.execute("DELETE FROM survey_votes WHERE post_id = %s", (post_id,))
+            cur.execute("DELETE FROM posts WHERE id = %s", (post_id,))
+        conn.commit()
+    return jsonify({"message": "Post deleted"}), 200
+
+
 @app.route("/api/posts")
 def get_posts():
     medicine        = request.args.get("medicine", "").strip().lower()
@@ -329,6 +356,8 @@ def delete_comment(comment_id):
                 return jsonify({"error": "Comment not found"}), 404
             if row[0] != user_id:
                 return jsonify({"error": "Not your comment"}), 403
+            # Delete replies first, then the comment itself
+            cur.execute("DELETE FROM comments WHERE parent_id = %s", (comment_id,))
             cur.execute("DELETE FROM comments WHERE id = %s", (comment_id,))
         conn.commit()
     return jsonify({"message": "Deleted"}), 200

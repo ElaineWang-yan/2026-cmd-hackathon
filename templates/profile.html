@@ -169,7 +169,17 @@
         .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
         .badge-yes { background: #dcfce7; color: #166534; }
         .badge-no  { background: #fee2e2; color: #991b1b; }
-        .post-card-arrow { font-size: 12px; font-weight: 600; color: var(--accent); margin-top: 10px; }
+        .post-card-footer {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 10px;
+        }
+        .post-card-arrow { font-size: 12px; font-weight: 600; color: var(--accent); }
+        .btn-delete-post-card {
+            background: none; border: 1.5px solid #fca5a5; color: #c0392b;
+            border-radius: 8px; padding: 5px 12px;
+            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-delete-post-card:hover { background: #fdf2f2; }
 
         /* INBOX */
         .inbox-item {
@@ -185,16 +195,10 @@
             display: flex; justify-content: space-between; align-items: flex-start;
             margin-bottom: 8px; gap: 12px;
         }
-        .inbox-drug {
-            font-size: 13px; font-weight: 600; color: var(--accent);
-        }
+        .inbox-drug { font-size: 13px; font-weight: 600; color: var(--accent); }
         .inbox-date { font-size: 11px; color: var(--ink-faint); flex-shrink: 0; }
-        .inbox-content {
-            font-size: 14px; font-weight: 300; color: var(--ink-muted); line-height: 1.6;
-        }
-        .inbox-commenter {
-            font-size: 11px; color: var(--ink-faint); margin-top: 6px;
-        }
+        .inbox-content { font-size: 14px; font-weight: 300; color: var(--ink-muted); line-height: 1.6; }
+        .inbox-commenter { font-size: 11px; color: var(--ink-faint); margin-top: 6px; }
         .inbox-new-dot {
             display: inline-block; width: 7px; height: 7px;
             background: var(--accent); border-radius: 50%; margin-right: 6px; vertical-align: middle;
@@ -308,7 +312,6 @@
             document.getElementById('tab-' + name).classList.add('active');
             document.getElementById('panel-' + name).classList.add('active');
 
-            // mark inbox as read when user opens it
             if (name === 'inbox') {
                 const badge = document.getElementById('badge-inbox');
                 if (!badge.classList.contains('hidden')) {
@@ -344,15 +347,14 @@
 
             if (!Array.isArray(posts) || posts.length === 0) {
                 list.innerHTML = '<p class="empty-state">You haven\'t posted anything yet.</p>';
+                document.getElementById('userMeta').textContent = '0 posts';
                 return;
             }
 
-            // Show count
             const badge = document.getElementById('badge-posts');
             badge.textContent = posts.length;
             badge.classList.remove('hidden');
 
-            // Update user meta
             document.getElementById('userMeta').textContent =
                 `${posts.length} post${posts.length > 1 ? 's' : ''}`;
 
@@ -379,8 +381,19 @@
                             Unlisted side effects: ${hasUnlisted ? 'Yes' : 'No'}
                         </span>
                     </div>
-                    <div class="post-card-arrow">Read more →</div>
+                    <div class="post-card-footer">
+                        <div class="post-card-arrow">Read more →</div>
+                        <button class="btn-delete-post-card">Delete</button>
+                    </div>
                 `;
+
+                card.querySelector('.btn-delete-post-card').addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (!confirm('Delete this post? This cannot be undone.')) return;
+                    const res = await fetch(`/api/posts/${post.id}`, { method: 'DELETE', credentials: 'include' });
+                    if (res.ok) loadPosts();
+                });
+
                 list.appendChild(card);
             });
         }
@@ -439,13 +452,11 @@
         async function markAllRead() {
             await fetch('/api/me/inbox/read', { method: 'POST', credentials: 'include' });
 
-            // Clear badge and button
             const badge   = document.getElementById('badge-inbox');
             const markBtn = document.getElementById('markReadBtn');
             badge.classList.add('hidden');
             markBtn.classList.add('hidden');
 
-            // Remove unread styling from all items
             document.querySelectorAll('.inbox-item.unread').forEach(el => {
                 el.classList.remove('unread');
                 const dot = el.querySelector('.inbox-new-dot');

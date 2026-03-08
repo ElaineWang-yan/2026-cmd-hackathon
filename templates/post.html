@@ -106,6 +106,14 @@
         .badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; }
         .badge-yes { background: #dcfce7; color: #166534; }
         .badge-no  { background: #fee2e2; color: #991b1b; }
+        .btn-delete-post {
+            background: none; border: 1.5px solid #fca5a5; color: #c0392b;
+            border-radius: 8px; padding: 6px 14px;
+            font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-delete-post:hover { background: #fdf2f2; }
 
         /* SURVEY */
         .survey-card {
@@ -376,15 +384,26 @@
             const post = await res.json();
             const hasUnlisted = post.unlisted_side_effects === 'yes';
             const bullets = summarize(post);
+            const isOwner = CURRENT_USER_ID && post.user_id === CURRENT_USER_ID;
             document.getElementById('postDetail').innerHTML = `
-                <div style="margin-bottom:16px">
-                    <div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">
-                        Unlisted side effects on medication label or patient information leaflet
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+                    <div>
+                        <div style="font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">
+                            Unlisted side effects on medication label or patient information leaflet
+                        </div>
+                        <span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">${hasUnlisted ? 'Yes' : 'No'}</span>
                     </div>
-                    <span class="badge ${hasUnlisted ? 'badge-yes' : 'badge-no'}">${hasUnlisted ? 'Yes' : 'No'}</span>
+                    ${isOwner ? `<button class="btn-delete-post" onclick="deletePost()">Delete post</button>` : ''}
                 </div>
                 <ul>${bullets.map(b => `<li>${b}</li>`).join('')}</ul>
             `;
+        }
+
+        // ── DELETE POST ──
+        async function deletePost() {
+            if (!confirm('Delete this post? This cannot be undone.')) return;
+            const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE', credentials: 'include' });
+            if (res.ok) window.location.href = '/profile';
         }
 
         // ── SURVEY ──
@@ -450,7 +469,6 @@
             const replies    = c.replies || [];
             const hasReplies = replies.length > 0;
 
-            // Main comment row
             const main = document.createElement('div');
             main.className = 'comment-main';
             main.innerHTML = `
@@ -465,7 +483,6 @@
             `;
             wrapper.appendChild(main);
 
-            // Replies section
             const repliesSection = document.createElement('div');
             repliesSection.className = 'replies-section';
             repliesSection.id = `replies-${c.id}`;
@@ -491,7 +508,6 @@
                 repliesSection.appendChild(replyEl);
             });
 
-            // Inline reply compose box
             const compose = document.createElement('div');
             compose.className = 'reply-compose';
             compose.id = `compose-${c.id}`;
@@ -506,7 +522,6 @@
             repliesSection.appendChild(compose);
             wrapper.appendChild(repliesSection);
 
-            // Toggle button (only if replies exist)
             if (hasReplies) {
                 const toggle = document.createElement('button');
                 toggle.className = 'replies-toggle';
@@ -530,7 +545,6 @@
 
         // ── OPEN / CLOSE REPLY BOX ──
         function openReplyBox(commentId, replyToEmail) {
-            // Close all other open reply boxes
             document.querySelectorAll('.reply-compose.open').forEach(el => el.classList.remove('open'));
 
             const compose = document.getElementById(`compose-${commentId}`);
@@ -540,13 +554,11 @@
             label.querySelector('span').textContent = replyToEmail;
             compose.dataset.replyToEmail = replyToEmail;
 
-            // Ensure replies section is open
             const section = document.getElementById(`replies-${commentId}`);
             section.classList.add('open');
             const arrow = document.getElementById(`arrow-${commentId}`);
             if (arrow) arrow.classList.add('open');
 
-            // Create toggle if this comment had 0 replies before
             ensureToggle(commentId);
 
             compose.classList.add('open');
@@ -621,13 +633,11 @@
             input.value = '';
             closeReplyBox(parentCommentId);
 
-            // Remember which reply sections are currently open
             const openIds = [...document.querySelectorAll('.replies-section.open')]
                 .map(el => el.id.replace('replies-', ''));
 
             await loadComments();
 
-            // Restore open state, and force-open the one just replied to
             const toOpen = new Set([...openIds, String(parentCommentId)]);
             toOpen.forEach(id => {
                 const section = document.getElementById(`replies-${id}`);
@@ -637,11 +647,10 @@
             });
         }
 
-        // ── DELETE ──
+        // ── DELETE COMMENT ──
         async function deleteComment(commentId) {
             await fetch(`/api/comments/${commentId}`, { method: 'DELETE', credentials: 'include' });
 
-            // Remember open sections before reload
             const openIds = [...document.querySelectorAll('.replies-section.open')]
                 .map(el => el.id.replace('replies-', ''));
 
@@ -666,7 +675,9 @@
                 if (post.having_period) bullets.push('Was on menstrual period during medication');
                 if (post.was_pregnant)  bullets.push('Was pregnant during medication');
             }
-            post.description.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
+            if (post.description) {
+                post.description.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 4).forEach(s => bullets.push(s));
+            }
             if (post.long_term_meds)    bullets.push(`Long-term medications: ${post.long_term_meds}`);
             if (post.health_conditions) bullets.push(`Health conditions: ${post.health_conditions}`);
             if (post.additional_notes)  bullets.push(`Additional notes: ${post.additional_notes}`);
