@@ -1,273 +1,615 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Post - MediShare</title>
-    <link rel="stylesheet" href="/static/css/create_post.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedEx — New Post</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --ink: #1a1a18;
+    --ink-muted: #7a7a72;
+    --ink-faint: #b8b8b0;
+    --accent: #2a6b52;
+    --accent-hover: #205540;
+    --accent-light: #e8f2ee;
+    --border: #e4e3de;
+    --error: #c0392b;
+    --error-bg: #fdf2f2;
+    --shadow-md: 0 4px 16px rgba(26,26,24,0.1), 0 12px 32px rgba(26,26,24,0.08);
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, #c8c7c0 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Navbar ── */
+  .navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: 60px;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+  }
+  .nav-logo { display: flex; align-items: baseline; gap: 1px; text-decoration: none; flex-shrink: 0; margin-right: 8px; }
+  .logo-med { font-family: 'Lora', serif; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.01em; }
+  .logo-ex  { font-family: 'Lora', serif; font-weight: 500; font-size: 20px; color: var(--accent); letter-spacing: -0.01em; }
+  .logo-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; margin-left: 2px; margin-bottom: 2px; flex-shrink: 0; }
+  .nav-spacer { flex: 1; }
+  .nav-back {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--ink-muted); font-size: 13px; font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .nav-back:hover { color: var(--ink); }
+
+  /* ── Page layout ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 660px;
+    margin: 0 auto;
+    padding: 88px 24px 80px;
+    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 {
+    font-family: 'Lora', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Form sections ── */
+  .form-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(26,26,24,0.04);
+  }
+  .form-section h2 {
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-optional {
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-faint);
+    margin-left: 8px;
+  }
+
+  /* ── Fields ── */
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .field label .hint {
+    font-weight: 300;
+    color: var(--ink-faint);
+    font-size: 12px;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .required { color: var(--accent); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 10px 13px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(42,107,82,0.1);
+  }
+  input.error, select.error, textarea.error {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.08);
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b8b8b0' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+  /* inline row */
+  .inline { display: flex; gap: 10px; align-items: center; }
+  .inline input[type="number"] { flex: 1; }
+  .inline select { flex: 1; }
+  .inline span { color: var(--ink-faint); font-size: 13px; flex-shrink: 0; }
+
+  /* toggle group */
+  .toggle-group { display: flex; gap: 4px; }
+  .toggle-btn {
+    padding: 9px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle-btn.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* radio group */
+  .radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin: 0;
+  }
+  .radio-group label:has(input:checked) {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .radio-group input[type="radio"] {
+    width: 15px; height: 15px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+  }
+  .radio-group input[type="radio"]:focus { box-shadow: none; }
+
+  /* checkbox */
+  .checkbox-label {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    color: var(--ink-muted) !important;
+    cursor: pointer;
+    margin-bottom: 8px !important;
+    transition: border-color 0.15s;
+  }
+  .checkbox-label:last-child { margin-bottom: 0 !important; }
+  .checkbox-label:hover { border-color: var(--accent); }
+  .checkbox-label input[type="checkbox"] {
+    width: 15px; height: 15px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+    padding: 0; border: none; background: none; box-shadow: none;
+  }
+
+  /* char count */
+  .char-count {
+    display: block;
+    text-align: right;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 5px;
+  }
+
+  /* error messages */
+  .error-msg {
+    display: none;
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 5px;
+  }
+  .error-msg.visible { display: block; }
+
+  /* form error banner */
+  .error-banner {
+    background: var(--error-bg);
+    border: 1px solid rgba(192,57,43,0.2);
+    border-radius: 9px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--error);
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-banner.visible { display: block; }
+
+  /* submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+    box-shadow: 0 2px 10px rgba(42,107,82,0.22);
+  }
+  .submit-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(42,107,82,0.28);
+  }
+  .submit-btn:active { transform: translateY(0); }
+</style>
 </head>
+
 <body>
 
-    <!-- NAV -->
-    <nav>
-        <a class="nav-logo" href="/">MediShare</a>
-        <input class="nav-search" type="text" placeholder="Search experiences...">
-        <div class="nav-profile">&#128100;</div>
-    </nav>
+<!-- Navbar -->
+<nav class="navbar">
+  <a href="/home" class="nav-logo">
+    <span class="logo-med">Med</span>
+    <span class="logo-ex">Ex</span>
+    <div class="logo-dot"></div>
+  </a>
+  <div class="nav-spacer"></div>
+  <a href="/home" class="nav-back">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Back to home
+  </a>
+</nav>
 
-    <!-- MAIN -->
-    <main>
-        <h1>Share Your Experience</h1>
-        <p class="subtitle">Help others by sharing your medication journey.</p>
+<div class="page">
 
-        <form id="createPostForm" novalidate>
+  <div class="page-header">
+    <h1>Share your experience</h1>
+    <p>Help others by sharing how a medication affected you — especially when your experience differed from what was expected.</p>
+  </div>
 
-            <!-- Basic Info -->
-            <section class="form-section">
-                <h2>Basic Information</h2>
+  <form id="createPostForm" novalidate>
 
-                <div class="field">
-                    <label for="drugName">Drug Name <span class="required">*</span></label>
-                    <input type="text" id="drugName" placeholder="e.g. Sertraline, Metformin">
-                    <span class="error-msg" id="drugName-error">Please enter the drug name.</span>
-                </div>
+    <!-- Basic Info -->
+    <section class="form-section">
+      <h2>Basic Information</h2>
 
-                <div class="field">
-                    <label for="gender">Biological Sex <span class="required">*</span></label>
-                    <select id="gender">
-                        <option value="">Select biological sex</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                        <option value="prefer_not">Prefer not to say</option>
-                    </select>
-                    <span class="error-msg" id="gender-error">Please select your biological sex.</span>
-                </div>
+      <div class="field">
+        <label for="drugName">Drug name <span class="required">*</span></label>
+        <input type="text" id="drugName" placeholder="e.g. Sertraline, Metformin">
+        <span class="error-msg" id="drugName-error">Please enter the drug name.</span>
+      </div>
 
-                <!-- Female-specific (hidden by default) -->
-                <div class="field" id="femaleSection" hidden>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="havingPeriod">
-                        Were you on your menstrual period while taking this medication?
-                    </label>
+      <div class="field">
+        <label for="gender">Biological sex <span class="required">*</span></label>
+        <select id="gender">
+          <option value="">Select biological sex</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+          <option value="prefer_not">Prefer not to say</option>
+        </select>
+        <span class="error-msg" id="gender-error">Please select your biological sex.</span>
+      </div>
 
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="wasPregnant">
-                        Were you pregnant while taking this medication?
-                    </label>
-                </div>
-            </section>
+      <div class="field" id="femaleSection" style="display:none;">
+        <label>Additional context</label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="havingPeriod">
+          Were you on your menstrual period while taking this medication?
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="wasPregnant">
+          Were you pregnant while taking this medication?
+        </label>
+      </div>
+    </section>
 
-            <!-- Dosage -->
-            <section class="form-section">
-                <h2>Dosage</h2>
+    <!-- Dosage -->
+    <section class="form-section">
+      <h2>Dosage</h2>
 
-                <div class="field">
-                    <label>Amount & Unit <span class="required">*</span></label>
-                    <div class="inline">
-                        <input type="number" id="dosageAmount" placeholder="e.g. 50" min="0" step="any">
-                        <select id="dosageUnit">
-                            <option value="mg">mg</option>
-                            <option value="mcg">mcg</option>
-                            <option value="g">g</option>
-                            <option value="ml">ml</option>
-                        </select>
-                    </div>
-                    <span class="error-msg" id="dosageAmount-error">Please enter the dosage amount.</span>
-                </div>
+      <div class="field">
+        <label>Amount & unit <span class="required">*</span></label>
+        <div class="inline">
+          <input type="number" id="dosageAmount" placeholder="e.g. 50" min="0" step="any">
+          <select id="dosageUnit">
+            <option value="mg">mg</option>
+            <option value="mcg">mcg</option>
+            <option value="g">g</option>
+            <option value="ml">ml</option>
+          </select>
+        </div>
+        <span class="error-msg" id="dosageAmount-error">Please enter the dosage amount.</span>
+      </div>
 
-                <div class="field">
-                    <label>Frequency <span class="required">*</span></label>
-                    <div class="inline">
-                        <select id="freqCount">
-                            <option value="">Times</option>
-                            <option value="1">1 time</option>
-                            <option value="2">2 times</option>
-                            <option value="3">3 times</option>
-                            <option value="4">4 times</option>
-                            <option value="5">5 times</option>
-                            <option value="6">6 times</option>
-                            <option value="7">7 times</option>
-                            <option value="8">8 times</option>
-                            <option value="9">9 times</option>
-                            <option value="10">10 times</option>
-                        </select>
-                        <span>per</span>
-                        <div class="toggle-group" id="freqPerGroup">
-                            <button type="button" class="toggle-btn active" data-value="day">Day</button>
-                            <button type="button" class="toggle-btn" data-value="week">Week</button>
-                            <button type="button" class="toggle-btn" data-value="month">Month</button>
-                        </div>
-                        <input type="hidden" id="freqPer" value="day">
-                    </div>
-                    <span class="error-msg" id="freqCount-error">Please select how many times.</span>
-                </div>
-            </section>
+      <div class="field">
+        <label>Frequency <span class="required">*</span></label>
+        <div class="inline">
+          <select id="freqCount">
+            <option value="">Times</option>
+            <option value="1">1 time</option>
+            <option value="2">2 times</option>
+            <option value="3">3 times</option>
+            <option value="4">4 times</option>
+            <option value="5">5 times</option>
+            <option value="6">6 times</option>
+            <option value="7">7 times</option>
+            <option value="8">8 times</option>
+            <option value="9">9 times</option>
+            <option value="10">10 times</option>
+          </select>
+          <span>per</span>
+          <div class="toggle-group" id="freqPerGroup">
+            <button type="button" class="toggle-btn active" data-value="day">Day</button>
+            <button type="button" class="toggle-btn" data-value="week">Week</button>
+            <button type="button" class="toggle-btn" data-value="month">Month</button>
+          </div>
+          <input type="hidden" id="freqPer" value="day">
+        </div>
+        <span class="error-msg" id="freqCount-error">Please select how many times.</span>
+      </div>
+    </section>
 
-            <!-- Duration -->
-            <section class="form-section">
-                <h2>Duration of Medication</h2>
+    <!-- Duration -->
+    <section class="form-section">
+      <h2>Duration</h2>
 
-                <div class="field">
-                    <label>How long did you take this medication? <span class="required">*</span></label>
-                    <div class="inline">
-                        <input type="number" id="durationValue" placeholder="e.g. 3" min="1">
-                        <select id="durationUnit">
-                            <option value="days">Days</option>
-                            <option value="weeks">Weeks</option>
-                            <option value="months">Months</option>
-                            <option value="years">Years</option>
-                        </select>
-                    </div>
-                    <span class="error-msg" id="durationValue-error">Please enter the duration.</span>
-                </div>
-            </section>
+      <div class="field">
+        <label>How long did you take this medication? <span class="required">*</span></label>
+        <div class="inline">
+          <input type="number" id="durationValue" placeholder="e.g. 3" min="1">
+          <select id="durationUnit">
+            <option value="days">Days</option>
+            <option value="weeks">Weeks</option>
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+          </select>
+        </div>
+        <span class="error-msg" id="durationValue-error">Please enter the duration.</span>
+      </div>
+    </section>
 
-            <!-- Experience -->
-            <section class="form-section">
-                <h2>Your Experience</h2>
+    <!-- Experience -->
+    <section class="form-section">
+      <h2>Your Experience</h2>
 
-                <div class="field">
-                    <label>Did this medication achieve its intended treatment effect for you? <span class="required">*</span></label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="expectedEffect" value="yes"> Yes</label>
-                        <label><input type="radio" name="expectedEffect" value="no"> No</label>
-                    </div>
-                    <span class="error-msg" id="expectedEffect-error">Please select an option.</span>
-                </div>
+      <div class="field">
+        <label>Did this medication achieve its intended effect for you? <span class="required">*</span></label>
+        <div class="radio-group">
+          <label><input type="radio" name="expectedEffect" value="yes"> Yes</label>
+          <label><input type="radio" name="expectedEffect" value="no"> No</label>
+        </div>
+        <span class="error-msg" id="expectedEffect-error">Please select an option.</span>
+      </div>
 
-                <div class="field">
-                    <label>Did you experience any side effects that were <strong>not listed</strong> on the medication label or patient information leaflet? <span class="required">*</span></label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="differentFromExpected" value="yes"> Yes</label>
-                        <label><input type="radio" name="differentFromExpected" value="no"> No</label>
-                    </div>
-                    <span class="error-msg" id="differentFromExpected-error">Please select an option.</span>
-                </div>
+      <div class="field">
+        <label>
+          Did you experience side effects <strong>not listed</strong> on the label?
+          <span class="required">*</span>
+        </label>
+        <div class="radio-group">
+          <label><input type="radio" name="differentFromExpected" value="yes"> Yes</label>
+          <label><input type="radio" name="differentFromExpected" value="no"> No</label>
+        </div>
+        <span class="error-msg" id="differentFromExpected-error">Please select an option.</span>
+      </div>
 
-                <div class="field">
-                    <label for="description">Describe your experience <span class="required">*</span></label>
-                    <textarea id="description" maxlength="5000" placeholder="Please describe the benefits you noticed, any side effects you experienced (listed or unlisted), and any unexpected reactions. Include how the medication affected your daily life."></textarea>
-                    <span class="char-count" id="descCharCount">0 / 5000</span>
-                    <span class="error-msg" id="description-error">Please describe your experience (at least 20 characters).</span>
-                </div>
-            </section>
+      <div class="field">
+        <label for="description">
+          Describe your experience
+          <span class="hint">Include benefits, side effects, and how it affected your daily life.</span>
+        </label>
+        <textarea id="description" maxlength="5000" placeholder="Share what you noticed — expected or not. The more detail you provide, the more it helps others in similar situations."></textarea>
+        <span class="char-count" id="descCharCount">0 / 5000</span>
+        <span class="error-msg" id="description-error">Please describe your experience (at least 20 characters).</span>
+      </div>
+    </section>
 
-            <!-- Additional Notes -->
-            <section class="form-section">
-                <h2>Additional Notes <span class="optional">(Optional)</span></h2>
+    <!-- Additional Notes -->
+    <section class="form-section">
+      <h2>Additional Notes <span class="section-optional">(optional)</span></h2>
 
-                <div class="field">
-                    <label for="longTermMeds">Do you take any long-term medications? <span class="optional">e.g. hormones, antidepressants</span></label>
-                    <input type="text" id="longTermMeds" placeholder="e.g. Levothyroxine 50mcg daily">
-                </div>
+      <div class="field">
+        <label for="longTermMeds">
+          Any long-term medications you take?
+          <span class="hint">e.g. hormones, antidepressants, supplements</span>
+        </label>
+        <input type="text" id="longTermMeds" placeholder="e.g. Levothyroxine 50mcg daily">
+      </div>
 
-                <div class="field">
-                    <label for="healthConditions">Do you have any underlying health conditions?</label>
-                    <input type="text" id="healthConditions" placeholder="e.g. Type 2 diabetes, hypothyroidism">
-                </div>
+      <div class="field">
+        <label for="healthConditions">Any underlying health conditions?</label>
+        <input type="text" id="healthConditions" placeholder="e.g. Type 2 diabetes, hypothyroidism">
+      </div>
 
-                <div class="field">
-                    <label for="additionalNotes">Anything else you'd like to add?</label>
-                    <textarea id="additionalNotes" maxlength="1000"></textarea>
-                    <span class="char-count" id="notesCharCount">0 / 1000</span>
-                </div>
-            </section>
+      <div class="field">
+        <label for="additionalNotes">Anything else you'd like to add?</label>
+        <textarea id="additionalNotes" maxlength="1000" style="min-height:80px;"></textarea>
+        <span class="char-count" id="notesCharCount">0 / 1000</span>
+      </div>
+    </section>
 
-            <p class="error-banner" id="formErrorBanner" hidden>Please fill in all required fields before submitting.</p>
+    <p class="error-banner" id="formErrorBanner">Please fill in all required fields before submitting.</p>
 
-            <button type="submit" class="submit-btn">Submit Post</button>
+    <button type="submit" class="submit-btn">Submit post</button>
 
-        </form>
-    </main>
+  </form>
+</div>
 
-    <script>
-        // Female conditional section
-        document.getElementById('gender').addEventListener('change', function () {
-            document.getElementById('femaleSection').hidden = this.value !== 'female';
-        });
+<script>
+  // Female section toggle
+  document.getElementById('gender').addEventListener('change', function () {
+    document.getElementById('femaleSection').style.display = this.value === 'female' ? 'block' : 'none';
+  });
 
-        // Per toggle buttons
-        document.getElementById('freqPerGroup').addEventListener('click', function (e) {
-            const btn = e.target.closest('.toggle-btn');
-            if (!btn) return;
-            this.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('freqPer').value = btn.dataset.value;
-        });
+  // Per toggle buttons
+  document.getElementById('freqPerGroup').addEventListener('click', function (e) {
+    const btn = e.target.closest('.toggle-btn');
+    if (!btn) return;
+    this.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('freqPer').value = btn.dataset.value;
+  });
 
-        // Character count
-        function bindCharCount(textareaId, countId, max) {
-            document.getElementById(textareaId).addEventListener('input', function () {
-                const counter = document.getElementById(countId);
-                counter.textContent = this.value.length + ' / ' + max;
-            });
-        }
-        bindCharCount('description', 'descCharCount', 5000);
-        bindCharCount('additionalNotes', 'notesCharCount', 1000);
+  // Character counters
+  function bindCharCount(textareaId, countId, max) {
+    document.getElementById(textareaId).addEventListener('input', function () {
+      document.getElementById(countId).textContent = this.value.length + ' / ' + max;
+    });
+  }
+  bindCharCount('description', 'descCharCount', 5000);
+  bindCharCount('additionalNotes', 'notesCharCount', 1000);
 
-        // Validation
-        function setError(fieldId, show) {
-            const field = document.getElementById(fieldId);
-            const error = document.getElementById(fieldId + '-error');
-            if (field) field.classList.toggle('error', show);
-            if (error) error.hidden = !show;
-            return show;
-        }
+  // Validation helpers
+  function setError(fieldId, show) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(fieldId + '-error');
+    if (field) field.classList.toggle('error', show);
+    if (error) error.classList.toggle('visible', show);
+    return show;
+  }
 
-        document.getElementById('createPostForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            let hasError = false;
+  // Form submit
+  document.getElementById('createPostForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    let hasError = false;
 
-            if (setError('drugName', !document.getElementById('drugName').value.trim())) hasError = true;
-            if (setError('gender', !document.getElementById('gender').value)) hasError = true;
-            if (setError('dosageAmount', !document.getElementById('dosageAmount').value)) hasError = true;
-            if (setError('freqCount', !document.getElementById('freqCount').value)) hasError = true;
-            if (setError('durationValue', !document.getElementById('durationValue').value)) hasError = true;
+    if (setError('drugName', !document.getElementById('drugName').value.trim())) hasError = true;
+    if (setError('gender', !document.getElementById('gender').value)) hasError = true;
+    if (setError('dosageAmount', !document.getElementById('dosageAmount').value)) hasError = true;
+    if (setError('freqCount', !document.getElementById('freqCount').value)) hasError = true;
+    if (setError('durationValue', !document.getElementById('durationValue').value)) hasError = true;
 
-            const expectedEffect = document.querySelector('input[name="expectedEffect"]:checked');
-            const expectedError = document.getElementById('expectedEffect-error');
-            if (!expectedEffect) { expectedError.hidden = false; hasError = true; }
-            else expectedError.hidden = true;
+    const expectedEffect = document.querySelector('input[name="expectedEffect"]:checked');
+    const expectedError  = document.getElementById('expectedEffect-error');
+    if (!expectedEffect) { expectedError.classList.add('visible'); hasError = true; }
+    else expectedError.classList.remove('visible');
 
-            const differentFromExpected = document.querySelector('input[name="differentFromExpected"]:checked');
-            const differentError = document.getElementById('differentFromExpected-error');
-            if (!differentFromExpected) { differentError.hidden = false; hasError = true; }
-            else differentError.hidden = true;
+    const differentFromExpected = document.querySelector('input[name="differentFromExpected"]:checked');
+    const differentError = document.getElementById('differentFromExpected-error');
+    if (!differentFromExpected) { differentError.classList.add('visible'); hasError = true; }
+    else differentError.classList.remove('visible');
 
-            if (setError('description', document.getElementById('description').value.trim().length < 20)) hasError = true;
 
-            const banner = document.getElementById('formErrorBanner');
-            banner.hidden = !hasError;
-            if (hasError) return;
+    const banner = document.getElementById('formErrorBanner');
+    banner.classList.toggle('visible', hasError);
+    if (hasError) { banner.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
 
-            const formData = {
-                drugName: document.getElementById('drugName').value.trim(),
-                gender: document.getElementById('gender').value,
-                havingPeriod: document.getElementById('havingPeriod').checked,
-                wasPregnant: document.getElementById('wasPregnant').checked,
-                dosage: {
-                    amount: parseFloat(document.getElementById('dosageAmount').value),
-                    unit: document.getElementById('dosageUnit').value,
-                    frequency: parseInt(document.getElementById('freqCount').value),
-                    per: document.getElementById('freqPer').value,
-                },
-                duration: {
-                    value: parseInt(document.getElementById('durationValue').value),
-                    unit: document.getElementById('durationUnit').value,
-                },
-                expectedEffect: expectedEffect.value,
-                differentFromExpected: differentFromExpected.value,
-                description: document.getElementById('description').value.trim(),
-                longTermMeds: document.getElementById('longTermMeds').value.trim(),
-                healthConditions: document.getElementById('healthConditions').value.trim(),
-                additionalNotes: document.getElementById('additionalNotes').value.trim(),
-            };
+    const formData = {
+      drugName: document.getElementById('drugName').value.trim(),
+      gender: document.getElementById('gender').value,
+      havingPeriod: document.getElementById('havingPeriod').checked,
+      wasPregnant: document.getElementById('wasPregnant').checked,
+      dosage: {
+        amount: parseFloat(document.getElementById('dosageAmount').value),
+        unit: document.getElementById('dosageUnit').value,
+        frequency: parseInt(document.getElementById('freqCount').value),
+        per: document.getElementById('freqPer').value,
+      },
+      duration: {
+        value: parseInt(document.getElementById('durationValue').value),
+        unit: document.getElementById('durationUnit').value,
+      },
+      expectedEffect: expectedEffect.value,
+      differentFromExpected: differentFromExpected.value,
+      description: document.getElementById('description').value.trim(),
+      longTermMeds: document.getElementById('longTermMeds').value.trim(),
+      healthConditions: document.getElementById('healthConditions').value.trim(),
+      additionalNotes: document.getElementById('additionalNotes').value.trim(),
+    };
 
-            console.log('Form submitted:', formData);
-            alert('Post submitted! Check the console for form data.');
-        });
-    </script>
+    console.log('Form submitted:', formData);
+    alert('Post submitted!');
+  });
+</script>
 
 </body>
 </html>
+

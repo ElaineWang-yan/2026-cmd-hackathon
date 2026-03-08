@@ -49,6 +49,11 @@ def login():
         return jsonify({"message": "Invalid email or password."}), 401
 
 
+@app.route("/home")
+def home():
+    return render_template("home.html")
+
+
 @app.route("/create-post")
 def create_post():
     return render_template("create_post.html")
