@@ -1,7 +1,1 @@
-module.exports = {
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL || 'mongodb://localhost:27017/medication_forum',
-        },
-    },
-};
+// Prisma reads DATABASE_URL directly from .env — no config file needed.

@@ -18,7 +18,7 @@ async function connectToDatabase() {
     return cachedDb;
   }
 
-  const uri = "mongodb+srv://yuyan06150723_db_user:0WkPHB6Da8kLFprg@cluster0.3vek23t.mongodb.net/medication_forum?appName=Cluster0"
+  const uri = process.env.MONGODB_URI;
 
   const client = new MongoClient(uri, {
     serverApi: {
