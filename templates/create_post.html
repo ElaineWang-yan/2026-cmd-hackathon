@@ -610,7 +610,7 @@
                 body: JSON.stringify(formData)
             });
             const result = await res.json();
-            if (result.success) {
+            if (res.ok) {
                 window.location.href = '/feed?medicine=' + encodeURIComponent(formData.drugName);
             } else {
                 alert('Error: ' + (result.error || result.message || 'Unknown error'));
