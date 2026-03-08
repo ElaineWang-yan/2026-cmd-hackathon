@@ -172,13 +172,61 @@ def save_post():
 
 @app.route("/api/posts")
 def get_posts():
-    medicine = request.args.get("medicine", "").strip().lower()
+    medicine            = request.args.get("medicine", "").strip().lower()
+    gender              = request.args.get("gender", "").strip().lower()
+    expected_effect     = request.args.get("expected_effect", "").strip().lower()
+    unlisted            = request.args.get("unlisted_side_effects", "").strip().lower()
+    duration_bucket     = request.args.get("duration", "").strip().lower()
+
+    query  = "SELECT * FROM posts WHERE LOWER(drug_name) = ?"
+    params = [medicine]
+
+    if gender:
+        query += " AND LOWER(gender) = ?"
+        params.append(gender)
+
+    if expected_effect:
+        query += " AND LOWER(expected_effect) = ?"
+        params.append(expected_effect)
+
+    if unlisted:
+        query += " AND LOWER(unlisted_side_effects) = ?"
+        params.append(unlisted)
+
+    # duration filter: convert stored duration_value + duration_unit to days for comparison
+    if duration_bucket == "short":
+        # under 1 week — we check rows where duration in days < 7
+        query += """
+            AND (
+                (LOWER(duration_unit) IN ('day','days')  AND duration_value < 7)
+             OR (LOWER(duration_unit) IN ('hour','hours') AND duration_value < 168)
+            )
+        """
+    elif duration_bucket == "medium":
+        # 1–4 weeks
+        query += """
+            AND (
+                (LOWER(duration_unit) IN ('day','days')   AND duration_value BETWEEN 7 AND 28)
+             OR (LOWER(duration_unit) IN ('week','weeks') AND duration_value BETWEEN 1 AND 4)
+            )
+        """
+    elif duration_bucket == "long":
+        # over 1 month
+        query += """
+            AND (
+                (LOWER(duration_unit) IN ('day','days')    AND duration_value > 28)
+             OR (LOWER(duration_unit) IN ('week','weeks')  AND duration_value > 4)
+             OR (LOWER(duration_unit) IN ('month','months'))
+             OR (LOWER(duration_unit) IN ('year','years'))
+            )
+        """
+
+    query += " ORDER BY created_at ASC"
+
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            "SELECT * FROM posts WHERE LOWER(drug_name) = ? ORDER BY created_at ASC",
-            (medicine,)
-        ).fetchall()
+        rows = conn.execute(query, params).fetchall()
+
     return jsonify([dict(r) for r in rows])
 
 
@@ -288,7 +336,7 @@ def vote_survey(post_id):
         return jsonify({"error": "Not logged in"}), 401
 
     data = request.get_json()
-    answer = data.get("answer")  # "yes", "no", or None (撤销)
+    answer = data.get("answer")  # "yes", "no", or None
 
     with sqlite3.connect(DB_PATH) as conn:
         if answer is None:
@@ -316,13 +364,12 @@ def vote_survey(post_id):
         total = yes_count + no_count
 
         user_vote = None
-        if user_id:
-            row = conn.execute(
-                "SELECT answer FROM survey_votes WHERE post_id = ? AND user_id = ?",
-                (post_id, user_id)
-            ).fetchone()
-            if row is not None:
-                user_vote = "yes" if row[0] == 1 else "no"
+        row = conn.execute(
+            "SELECT answer FROM survey_votes WHERE post_id = ? AND user_id = ?",
+            (post_id, user_id)
+        ).fetchone()
+        if row is not None:
+            user_vote = "yes" if row[0] == 1 else "no"
 
     return jsonify({
         "yes_count": yes_count,
@@ -332,6 +379,8 @@ def vote_survey(post_id):
     })
 
 
+# ── ME ────────────────────────────────────────────────────
+
 @app.route("/api/me")
 def me():
     user_id = session.get("user_id")
@@ -339,6 +388,8 @@ def me():
     if not user_id:
         return jsonify({"user_id": None, "email": None})
     return jsonify({"user_id": user_id, "email": email})
+
+
 # ── RUN ───────────────────────────────────────────────────
 
 if __name__ == "__main__":
