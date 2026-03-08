@@ -219,8 +219,8 @@
         <div class="nav-profile" id="profileMenu">
             <button class="profile-avatar" id="profileBtn">U</button>
             <div class="dropdown" id="dropdown">
-                <div class="dropdown-email">user@example.com</div>
-                <a href="#" class="dropdown-item">My profile</a>
+                <div class="dropdown-email" id="navEmail">—</div>
+                <a href="/profile" class="dropdown-item">My profile</a>
                 <div class="dropdown-divider"></div>
                 <a href="/" class="dropdown-item danger">Log out</a>
             </div>
@@ -292,6 +292,14 @@
             if (!profileMenu.contains(e.target)) dropdown.classList.remove("open");
         });
 
+        // Load user email
+        fetch('/api/me', { credentials: 'include' }).then(r => r.json()).then(d => {
+            if (d.email) {
+                document.getElementById('navEmail').textContent = d.email;
+                document.getElementById('profileBtn').textContent = d.email[0].toUpperCase();
+            }
+        });
+
         // ── SETUP ──
         const params   = new URLSearchParams(window.location.search);
         const medicine = params.get('medicine') || '';
@@ -305,7 +313,6 @@
         });
 
         // ── FILTER STATE ──
-        // Only one value active per filter group at a time
         const activeFilters = {
             gender: null,
             expected_effect: null,
@@ -313,18 +320,15 @@
             duration: null
         };
 
-        // chip click logic
         document.querySelectorAll('.chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const filterKey = chip.dataset.filter;
                 const value     = chip.dataset.value;
 
                 if (activeFilters[filterKey] === value) {
-                    // clicking active chip toggles it off
                     activeFilters[filterKey] = null;
                     chip.classList.remove('active');
                 } else {
-                    // deactivate previous chip in same group
                     document.querySelectorAll(`.chip[data-filter="${filterKey}"]`)
                         .forEach(c => c.classList.remove('active'));
                     activeFilters[filterKey] = value;
