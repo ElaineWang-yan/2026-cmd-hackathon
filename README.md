@@ -7,6 +7,15 @@ A web platform where people can share and browse real-world experiences with med
 
 Many minority groups are underrepresented in medical research, so the effects of a medication on them are often less well documented. MedEx explores one way to help fill that gap: letting users share their own experiences in a structured way, so that others with similar backgrounds can learn from them.
 
+## Contributors
+
+| GitHub account | Commit author name(s) shown in history |
+|---|---|
+| [@everly0125](https://github.com/everly0125) | Everly Sun, kumi |
+| [@ElaineWang-yan](https://github.com/ElaineWang-yan) | Yuyan Wang |
+
+**Note on commit history:** Some commits were made from the terminal before Git's `user.name` and `user.email` were configured, so they appear under local computer usernames and are not linked to GitHub profiles. Commits made through the GitHub web interface are linked to the correct accounts. The table above maps these names to the actual contributors.
+
 ## Features
 
 - **User accounts:** registration and login with session-based authentication (Flask sessions) and password hashing (Werkzeug)
